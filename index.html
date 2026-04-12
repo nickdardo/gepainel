@@ -268,7 +268,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
 </div>
 
 <!-- MODAL TOMADOR -->
-<div class="mbd" id="tom-modal" style="display:none" onclick="if(event.target===this)closeM('tom-modal')">
+<div class="mbd" id="tom-modal" style="display:none;z-index:300" onclick="if(event.target===this)closeM('tom-modal')">
   <div class="modal" style="max-width:440px">
     <div class="mhdr"><span class="mtitle" id="tom-modal-title">Novo Tomador</span><button class="mclose" onclick="closeM('tom-modal')">✕</button></div>
     <div class="mbody">
@@ -906,7 +906,7 @@ function tomTbodyHTML(list){
       <td style="font-weight:700;color:${devido>0?'var(--amb)':'var(--grn)'}">${fmtR(devido)}</td>
       <td><div style="display:flex;gap:.3rem">
         <button class="btn btn-xs btn-g" onclick="openTomModal('${t.id}')">✏</button>
-        ${session.role==='admin'?`<button class="btn btn-xs btn-d" onclick="deleteTom('${t.id}')">✕</button>`:''}
+        <button class="btn btn-xs btn-d" onclick="deleteTom('${t.id}')">✕</button>
       </div></td>
     </tr>`;
   }).join('');
