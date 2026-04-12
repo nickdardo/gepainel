@@ -7,6 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%2310B981'>$</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -514,6 +515,187 @@ function renderDashboard(){
 }
 
 // ══ EMPRÉSTIMOS ══
+
+// ══ IMPORT / EXPORT ══
+
+async function importExcel(input){
+  const file=input.files[0];
+  if(!file)return;
+  input.value='';
+  toast('Lendo arquivo...');
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+
+      // Find header row (contains 'NOME')
+      let headerIdx=rows.findIndex(r=>r.some(c=>String(c||'').toUpperCase().includes('NOME')));
+      if(headerIdx===-1){toast('⚠ Formato inválido. Coluna NOME não encontrada.',true);return;}
+      const dataRows=rows.slice(headerIdx+1).filter(r=>r[1]&&String(r[1]).trim());
+
+      if(!dataRows.length){toast('⚠ Nenhum dado encontrado.',true);return;}
+
+      // Show preview modal
+      showImportPreview(dataRows);
+    }catch(err){
+      console.error(err);
+      toast('⚠ Erro ao ler o arquivo.',true);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showImportPreview(dataRows){
+  const existing=document.getElementById('import-preview-modal');
+  if(existing)existing.remove();
+
+  const preview=dataRows.slice(0,5).map(r=>`
+    <tr>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[1]||''}</td>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[6]||''}</td>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">R$ ${Number(r[2]||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${(Number(r[3]||0)*100).toFixed(1)}%</td>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[7]||''}</td>
+    </tr>`).join('');
+
+  const div=document.createElement('div');
+  div.id='import-preview-modal';
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem';
+  div.innerHTML=`<div style="background:#fff;border-radius:var(--r);width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:var(--shm)">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-family:var(--FT);font-size:1.15rem">Importar ${dataRows.length} registro${dataRows.length!==1?'s':''}</div>
+      <button onclick="document.getElementById('import-preview-modal').remove()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--n4)">✕</button>
+    </div>
+    <div style="padding:1.25rem 1.5rem">
+      <div style="padding:.75rem 1rem;background:var(--grn0);border-radius:var(--rs);font-size:13px;color:#065F46;margin-bottom:1rem;border:1px solid var(--grn1)">
+        ✅ Arquivo reconhecido! <strong>${dataRows.length} empréstimos</strong> serão importados.<br>
+        Os tomadores serão criados automaticamente se ainda não existirem.
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--n4);text-transform:uppercase;margin-bottom:.5rem">Prévia (primeiros 5)</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#F9FAFB">
+            <th style="padding:6px 8px;border:1px solid #E5E7EB;font-size:11px;text-align:left">Nome</th>
+            <th style="padding:6px 8px;border:1px solid #E5E7EB;font-size:11px;text-align:left">Telefone</th>
+            <th style="padding:6px 8px;border:1px solid #E5E7EB;font-size:11px;text-align:left">Valor</th>
+            <th style="padding:6px 8px;border:1px solid #E5E7EB;font-size:11px;text-align:left">Juros</th>
+            <th style="padding:6px 8px;border:1px solid #E5E7EB;font-size:11px;text-align:left">Data</th>
+          </tr></thead>
+          <tbody>${preview}</tbody>
+        </table>
+      </div>
+      ${dataRows.length>5?`<div style="font-size:12px;color:var(--n4);margin-top:.5rem">... e mais ${dataRows.length-5} registro${dataRows.length-5!==1?'s':''}</div>`:''}
+    </div>
+    <div style="padding:1rem 1.5rem;border-top:1px solid #E5E7EB;display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="document.getElementById('import-preview-modal').remove()">Cancelar</button>
+      <button class="btn btn-grn btn-sm" id="btn-confirm-import" onclick="executeImport(window._importRows)">✓ Importar tudo</button>
+    </div>
+  </div>`;
+  window._importRows=dataRows;
+  document.body.appendChild(div);
+}
+
+async function executeImport(dataRows){
+  const btn=document.getElementById('btn-confirm-import');
+  if(btn){btn.textContent='Importando...';btn.disabled=true;}
+
+  let tomCriados=0,empCriados=0,parcCriadas=0,erros=0;
+
+  // Cache de tomadores por nome normalizado
+  const tomCache={};
+  tomadores.forEach(t=>{tomCache[t.nome.trim().toUpperCase()]=t;});
+
+  for(const row of dataRows){
+    try{
+      const nome=String(row[1]||'').trim();
+      const valor=parseFloat(row[2])||0;
+      const juros=parseFloat(row[3])||0;
+      const telefone=String(row[6]||'').trim();
+      const dataEmp=formatDateForDB(row[7]);
+      if(!nome||!valor||!dataEmp)continue;
+
+      // Criar ou reutilizar tomador
+      const nomeKey=nome.toUpperCase();
+      let tom=tomCache[nomeKey];
+      if(!tom){
+        const{data:td,error:te}=await sb.from('tomadores').insert({nome,contato:telefone||null}).select().single();
+        if(te||!td){erros++;continue;}
+        tom=td;tomadores.push(td);tomCache[nomeKey]=td;tomCriados++;
+      }
+
+      // Criar empréstimo
+      const{data:emp,error:ee}=await sb.from('emprestimos').insert({
+        tomador_id:tom.id,valor,juros,
+        data_emprestimo:dataEmp,
+        created_by:session.id
+      }).select().single();
+      if(ee||!emp){erros++;continue;}
+      emprestimos.unshift(emp);empCriados++;
+
+      // Criar parcelas dos vencimentos (colunas 8-27)
+      const vencDates=[];
+      for(let c=8;c<=27;c++){
+        if(row[c]){
+          const d=formatDateForDB(row[c]);
+          if(d)vencDates.push(d);
+        }
+      }
+      if(vencDates.length>0){
+        const valorParc=parseFloat(((valor+valor*juros)/vencDates.length).toFixed(2));
+        const parcsPayload=vencDates.map((venc,i)=>({
+          emprestimo_id:emp.id,numero:i+1,
+          vencimento:venc,valor:valorParc,status:'pendente'
+        }));
+        const{data:ps}=await sb.from('parcelas').insert(parcsPayload).select();
+        if(ps){parcelas.push(...ps);parcCriadas+=ps.length;}
+      }
+    }catch(err){erros++;console.error(err);}
+  }
+
+  document.getElementById('import-preview-modal')?.remove();
+  toast(`✓ Importado! ${empCriados} empréstimos, ${tomCriados} tomadores, ${parcCriadas} parcelas.${erros?` ⚠ ${erros} erro(s).`:''}`);
+  renderEmprestimos();
+}
+
+function formatDateForDB(val){
+  if(!val)return null;
+  if(val instanceof Date){
+    const y=val.getFullYear();const m=String(val.getMonth()+1).padStart(2,'0');const d=String(val.getDate()).padStart(2,'0');
+    return`${y}-${m}-${d}`;
+  }
+  const s=String(val).trim();
+  // yyyy-mm-dd
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  // dd/mm/yyyy
+  const m2=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(m2)return`${m2[3]}-${m2[2]}-${m2[1]}`;
+  return null;
+}
+
+function exportExcel(){
+  if(!emprestimos.length){toast('⚠ Nenhum empréstimo para exportar.',true);return;}
+  const rows=[['#','NOME','TELEFONE','VALOR EMPRESTADO','JUROS(%)','LUCRO','VALOR TOTAL','DATA DO EMPRÉSTIMO',
+    ...Array.from({length:20},(_,i)=>`${i+1}ª VENCIMENTO`)]];
+
+  emprestimos.forEach((e,i)=>{
+    const tom=tomadores.find(t=>t.id===e.tomador_id);
+    const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id).sort((a,b)=>a.numero-b.numero);
+    const lucro=e.valor*e.juros;
+    const total=e.valor+lucro;
+    const vencCols=Array.from({length:20},(_,j)=>parcsEmp[j]?.vencimento||'');
+    rows.push([i+1,tom?.nome||'',tom?.contato||'',e.valor,e.juros*100,lucro.toFixed(2),total.toFixed(2),e.data_emprestimo,...vencCols]);
+  });
+
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'BANCO DE DADOS',ws);
+  XLSX.writeFile(wb,`EmprestimoPainel_${today()}.xlsx`);
+  toast('✓ Arquivo exportado!');
+}
+
 let _selectMode=false;
 
 function toggleSelectMode(){
@@ -562,7 +744,14 @@ function renderEmprestimos(){
   mc.innerHTML=`
     <div class="sec-hdr">
       <span class="sec-title">Empréstimos</span>
-      <button class="btn btn-grn btn-sm" onclick="openEmpModal(null)">+ Novo Empréstimo</button>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-g btn-sm" onclick="exportExcel()">⬇ Exportar</button>
+        <label class="btn btn-g btn-sm" style="cursor:pointer">
+          ⬆ Importar Excel
+          <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)"/>
+        </label>
+        <button class="btn btn-grn btn-sm" onclick="openEmpModal(null)">+ Novo Empréstimo</button>
+      </div>
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
       <input type="text" id="emp-s" placeholder="🔍  Buscar por nome, local ou responsável..." oninput="filterEmp()" style="max-width:380px"/>
