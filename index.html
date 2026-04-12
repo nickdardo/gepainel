@@ -228,7 +228,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
         <div class="fg"><span class="lbl">Data do Empréstimo *</span><input type="date" id="emp-data"/></div>
 
         <div class="msec full" style="border-top:none;padding-top:0">Valores</div>
-        <div class="fg"><span class="lbl">Valor Emprestado (R$) *</span><input type="number" id="emp-valor" placeholder="0,00" min="0" step="0.01" oninput="updateEmpCalc()"/></div>
+        <div class="fg"><span class="lbl">Valor Emprestado (R$) *</span><input type="text" id="emp-valor" placeholder="Ex: 1.000,00" oninput="maskCurrency(this);updateEmpCalc()" inputmode="numeric"/></div>
         <div class="fg"><span class="lbl">Juros (%) *</span>
           <select id="emp-juros" onchange="updateEmpCalc()">
             <option value="0.05">5%</option>
@@ -339,6 +339,20 @@ const fmtR=v=>v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDig
 const can=p=>{if(!session)return false;if(session.role==='admin')return true;return['dashboard','emprestimos','tomadores','simulador'].includes(p);};
 const AV_STYLE={admin:'background:#FDE68A;color:#78350F',op:'background:#D1FAE5;color:#065F46'};
 const isAtrasada=v=>v&&v.status==='pendente'&&new Date(v.vencimento+'T12:00:00')<new Date();
+
+function maskCurrency(el){
+  let v=el.value.replace(/[^\d]/g,'');
+  if(!v){el.value='';return;}
+  const num=parseInt(v,10)/100;
+  el.value=num.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function parseCurrency(s){
+  if(!s)return 0;
+  // handles "1.234,56" or "1234.56" or "1234"
+  const clean=String(s).replace(/\./g,'').replace(',','.');
+  return parseFloat(clean)||0;
+}
 
 function maskTel(el){let v=el.value.replace(/[^\d]/g,'');if(v.length>0)v='('+v;if(v.length>3)v=v.slice(0,3)+') '+v.slice(3);if(v.length>10)v=v.slice(0,10)+'-'+v.slice(10);el.value=v.slice(0,15);}
 function toast(msg,err=false){const t=document.createElement('div');t.className='toast';t.textContent=msg;t.style.background=err?'#991B1B':'#065F46';document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
@@ -816,7 +830,7 @@ function empTbodyHTML(list){
 }
 
 function updateEmpCalc(){
-  const val=parseFloat(document.getElementById('emp-valor')?.value)||0;
+  const val=parseCurrency(document.getElementById('emp-valor')?.value)||0;
   const juros=parseFloat(document.getElementById('emp-juros')?.value)||0;
   const nparc=parseInt(document.getElementById('emp-nparc')?.value)||1;
   const lucro=val*juros;
@@ -864,7 +878,7 @@ function openEmpModal(id){
 
 async function saveEmp(){
   const tomId=document.getElementById('emp-tom').value;
-  const valor=parseFloat(document.getElementById('emp-valor').value);
+  const valor=parseCurrency(document.getElementById('emp-valor').value);
   const juros=parseFloat(document.getElementById('emp-juros').value);
   const data=document.getElementById('emp-data').value;
   const nparc=parseInt(document.getElementById('emp-nparc').value)||0;
@@ -1203,7 +1217,7 @@ function renderSimulador(){
     <div class="card" style="max-width:500px">
       <div class="card-title">Calcular Empréstimo</div>
       <div class="fgrid">
-        <div class="fg"><span class="lbl">Valor (R$)</span><input type="number" id="sim-val" placeholder="Ex: 1000" min="0" step="0.01" oninput="calcSim()"/></div>
+        <div class="fg"><span class="lbl">Valor (R$)</span><input type="text" id="sim-val" placeholder="Ex: 1.000,00" oninput="maskCurrency(this);calcSim()" inputmode="numeric" style="font-size:15px;font-weight:600"/></div>
         <div class="fg"><span class="lbl">Juros (%)</span>
           <select id="sim-jur" onchange="calcSim()">
             <option value="0.05">5%</option>
@@ -1226,29 +1240,55 @@ function renderSimulador(){
       <div id="sim-result" style="margin-top:1rem"></div>
     </div>
     <div class="card" style="margin-top:1rem">
-      <div class="card-title">Tabela de Referência — 30% de juros</div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Valor</th><th>Saída (capital)</th><th>1 mês</th><th>2 meses</th><th>3 meses</th><th>4 meses</th><th>5 meses</th><th>Total</th></tr></thead>
-          <tbody>
-            ${[300,400,500,600,700,800,900,1000,2000,3000,4000,5000].map(v=>{
-              const lucro=v*0.3;const total=v+lucro;const parc=total/5;
-              return`<tr>
-                <td style="font-weight:600;color:var(--blu)">${fmtR(v)}</td>
-                <td style="color:var(--n3)">${fmtR(v)}</td>
-                ${[1,2,3,4,5].map(_=>`<td style="color:var(--grn);font-weight:600">${fmtR(parc)}</td>`).join('')}
-                <td style="font-weight:700;color:var(--grn)">${fmtR(total)}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+        <div class="card-title" style="margin-bottom:0">Tabela de Referência</div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span style="font-size:12px;color:var(--n3);font-weight:600">Juros:</span>
+          <select id="ref-jur" onchange="updateRefTable()" style="width:auto;padding:.35rem .75rem;font-size:13px;font-weight:600">
+            <option value="0.05">5%</option>
+            <option value="0.1">10%</option>
+            <option value="0.15">15%</option>
+            <option value="0.2">20%</option>
+            <option value="0.25">25%</option>
+            <option value="0.3" selected>30%</option>
+            <option value="0.4">40%</option>
+            <option value="0.5">50%</option>
+          </select>
+        </div>
       </div>
+      <div class="tbl-wrap" id="ref-table-wrap"></div>
     </div>`;
+  updateRefTable();
   calcSim();
 }
 
+function updateRefTable(){
+  const jur=parseFloat(document.getElementById('ref-jur')?.value)||0.3;
+  const pct=(jur*100)%1===0?(jur*100).toFixed(0):(jur*100).toFixed(1);
+  const valores=[300,400,500,600,700,800,900,1000,2000,3000,4000,5000,10000,20000,50000];
+  const wrap=document.getElementById('ref-table-wrap');
+  if(!wrap)return;
+  const rows=valores.map(v=>{
+    const lucro=v*jur;const total=v+lucro;const parc5=total/5;
+    return`<tr>
+      <td style="font-weight:700;color:var(--blu)">${fmtR(v)}</td>
+      <td style="color:var(--n3)">${fmtR(v)}</td>
+      ${[1,2,3,4,5].map(n=>`<td style="color:var(--grn);font-weight:600">${fmtR(total/n)}</td>`).join('')}
+      <td style="font-weight:700;color:var(--grn)">${fmtR(total)}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML=`<table>
+    <thead><tr>
+      <th>Valor</th><th>Saída (capital)</th>
+      <th>1 mês</th><th>2 meses</th><th>3 meses</th><th>4 meses</th><th>5 meses</th>
+      <th>Total (${pct}% juros)</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 function calcSim(){
-  const val=parseFloat(document.getElementById('sim-val')?.value)||0;
+  const val=parseCurrency(document.getElementById('sim-val')?.value)||0;
   const jur=parseFloat(document.getElementById('sim-jur')?.value)||0.2;
   const nparc=parseInt(document.getElementById('sim-parc')?.value)||1;
   const data=document.getElementById('sim-data')?.value||today();
