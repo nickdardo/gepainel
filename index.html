@@ -1215,10 +1215,12 @@ function renderSimulador(){
   const mc=document.getElementById('main-content');
   mc.innerHTML=`
     <div class="sec-hdr"><span class="sec-title">Simulador de Juros</span></div>
-    <div class="card" style="max-width:500px">
+    <div class="card" style="max-width:480px">
       <div class="card-title">Calcular Empréstimo</div>
       <div class="fgrid">
-        <div class="fg"><span class="lbl">Valor (R$)</span><input type="text" id="sim-val" placeholder="Ex: 1.000,00" oninput="maskCurrency(this);calcSim()" inputmode="numeric" style="font-size:15px;font-weight:600"/></div>
+        <div class="fg"><span class="lbl">Valor (R$)</span>
+          <input type="text" id="sim-val" placeholder="Ex: 1.000,00" oninput="maskCurrency(this);calcSim()" inputmode="numeric" style="font-size:16px;font-weight:700"/>
+        </div>
         <div class="fg"><span class="lbl">Juros (%)</span>
           <select id="sim-jur" onchange="calcSim()">
             <option value="0.05">5%</option>
@@ -1231,12 +1233,6 @@ function renderSimulador(){
             <option value="0.5">50%</option>
           </select>
         </div>
-        <div class="fg"><span class="lbl">Parcelas</span>
-          <select id="sim-parc" onchange="calcSim()">
-            ${[1,2,3,4,5,6,8,10,12,15,20].map(n=>`<option value="${n}">${n}x</option>`).join('')}
-          </select>
-        </div>
-        <div class="fg"><span class="lbl">Data início</span><input type="date" id="sim-data" value="${today()}" onchange="calcSim()"/></div>
       </div>
       <div id="sim-result" style="margin-top:1rem"></div>
     </div>
@@ -1249,9 +1245,9 @@ function renderSimulador(){
             <option value="0.05">5%</option>
             <option value="0.1">10%</option>
             <option value="0.15">15%</option>
-            <option value="0.2">20%</option>
+            <option value="0.2" selected>20%</option>
             <option value="0.25">25%</option>
-            <option value="0.3" selected>30%</option>
+            <option value="0.3">30%</option>
             <option value="0.4">40%</option>
             <option value="0.5">50%</option>
           </select>
@@ -1320,39 +1316,65 @@ function updateRefTable(){
 function calcSim(){
   const val=parseCurrency(document.getElementById('sim-val')?.value)||0;
   const jur=parseFloat(document.getElementById('sim-jur')?.value)||0.2;
-  const nparc=parseInt(document.getElementById('sim-parc')?.value)||1;
-  const data=document.getElementById('sim-data')?.value||today();
-  const res=document.getElementById('sim-result');if(!res)return;
+  const res=document.getElementById('sim-result');
+  if(!res)return;
   if(!val){res.innerHTML='';return;}
-  const lucro=val*jur;const total=val+lucro;const valorParc=total/nparc;
-  const dataBase=new Date(data+'T12:00:00');
-  const vencimentos=Array.from({length:nparc},(_,i)=>{
-    const d=new Date(dataBase.getTime()+(i+1)*31*24*60*60*1000);
-    return{num:i+1,data:d.toLocaleDateString('pt-BR'),valor:valorParc};
-  });
-  res.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1rem">
-      <div style="background:var(--blu0);border-radius:var(--rs);padding:.75rem;text-align:center">
-        <div style="font-size:10px;color:var(--blu);font-weight:700;text-transform:uppercase">Lucro</div>
-        <div style="font-family:var(--FT);font-size:1.3rem;color:var(--blu)">${fmtR(lucro)}</div>
+
+  const jurosM=val*jur;
+  const recoveryMonth=Math.ceil(1/jur);
+  const maxMonths=Math.min(recoveryMonth+2,20);
+  const pct=(jur*100)%1===0?(jur*100).toFixed(0):(jur*100).toFixed(1);
+
+  // Summary cards
+  const cards=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+      <div style="background:var(--blu0);border-radius:var(--rs);padding:.85rem;text-align:center">
+        <div style="font-size:10px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:3px">Juros por mês</div>
+        <div style="font-family:var(--FT);font-size:1.4rem;color:var(--blu)">${fmtR(jurosM)}</div>
       </div>
-      <div style="background:var(--grn0);border-radius:var(--rs);padding:.75rem;text-align:center">
-        <div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase">Total a receber</div>
-        <div style="font-family:var(--FT);font-size:1.3rem;color:var(--grn)">${fmtR(total)}</div>
+      <div style="background:var(--grn0);border-radius:var(--rs);padding:.85rem;text-align:center">
+        <div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Capital recuperado em</div>
+        <div style="font-family:var(--FT);font-size:1.4rem;color:var(--grn)">${recoveryMonth} ${recoveryMonth===1?'mês':'meses'}</div>
       </div>
-      <div style="background:var(--amb0);border-radius:var(--rs);padding:.75rem;text-align:center">
-        <div style="font-size:10px;color:var(--amb);font-weight:700;text-transform:uppercase">Valor por parcela</div>
-        <div style="font-family:var(--FT);font-size:1.3rem;color:var(--amb)">${fmtR(valorParc)}</div>
-      </div>
-    </div>
-    <div style="font-size:12px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Vencimentos (a cada 31 dias)</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.4rem">
-      ${vencimentos.map(v=>`<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:var(--rs);padding:.5rem .75rem;font-size:12px">
-        <div style="font-weight:700;color:var(--n3)">${v.num}ª parcela</div>
-        <div style="color:var(--n4)">${v.data}</div>
-        <div style="font-weight:700;color:var(--grn)">${fmtR(v.valor)}</div>
-      </div>`).join('')}
     </div>`;
+
+  // Month cells
+  const hdrCols=Array.from({length:maxMonths},(_,i)=>`<th style="text-align:center;min-width:80px;font-size:11px">${i+1}° mês</th>`).join('');
+  const cells=Array.from({length:maxMonths},(_,i)=>{
+    const mes=i+1;
+    const cumul=jurosM*mes;
+    const isRecovery=mes===recoveryMonth;
+    const pastRecovery=mes>recoveryMonth;
+    let style='text-align:center;padding:.5rem .25rem';
+    if(isRecovery) return`<td style="${style}"><div style="background:#059669;color:#fff;font-weight:800;font-size:12px;border-radius:6px;padding:4px 6px;animation:blink-grn 1.2s ease-in-out infinite">${fmtR(cumul)}<div style="font-size:9px;margin-top:2px">✓ Recuperado!</div></div></td>`;
+    if(pastRecovery) return`<td style="${style}"><div style="color:var(--grn);font-weight:600;font-size:12px;background:var(--grn0);border-radius:4px;padding:3px 5px">${fmtR(cumul)}</div></td>`;
+    return`<td style="${style}"><div style="color:var(--grn);font-weight:600;font-size:12px">${fmtR(cumul)}</div></td>`;
+  }).join('');
+
+  const table=`
+    <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">
+      Evolução dos juros — ${fmtR(val)} a ${pct}% ao mês
+    </div>
+    <div style="overflow-x:auto;border-radius:var(--r);border:1px solid #E5E7EB">
+      <table>
+        <thead><tr>
+          <th style="min-width:130px">Valor emprestado</th>
+          <th style="min-width:100px">Saída (capital)</th>
+          ${hdrCols}
+        </tr></thead>
+        <tbody><tr>
+          <td style="font-weight:700;color:var(--blu)">${fmtR(val)}</td>
+          <td style="color:var(--n3);font-weight:500">${fmtR(val)}</td>
+          ${cells}
+        </tr></tbody>
+      </table>
+    </div>`;
+
+  res.innerHTML=cards+table;
+
+  // Sync ref-jur select
+  const refJur=document.getElementById('ref-jur');
+  if(refJur&&refJur.value!==String(jur)){refJur.value=String(jur);updateRefTable();}
 }
 
 // ══ USUÁRIOS ══
