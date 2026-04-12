@@ -338,7 +338,7 @@ const ini=n=>(n||'?').split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
 const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const today=()=>new Date().toISOString().split('T')[0];
 const fmtR=v=>v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
-const can=p=>{if(!session)return false;if(session.role==='admin')return true;return['dashboard','emprestimos','tomadores','simulador'].includes(p);};
+const can=p=>{if(!session)return false;if(session.role==='admin')return true;return['dashboard','emprestimos','tomadores','simulador','perfil'].includes(p);};
 const AV_STYLE={admin:'background:#FDE68A;color:#78350F',op:'background:#FFF7ED;color:#EA580C'};
 const isAtrasada=v=>v&&v.status==='pendente'&&new Date(v.vencimento+'T12:00:00')<new Date();
 
@@ -371,6 +371,7 @@ function buildSidebar(){
     {id:'emprestimos',icon:'💰',label:'Empréstimos'},
     {id:'tomadores',icon:'👥',label:'Tomadores'},
     {id:'simulador',icon:'🧮',label:'Simulador'},
+    {id:'perfil',icon:'👤',label:'Meu Perfil'},
     {id:'usuarios',icon:'⚙️',label:'Usuários',admin:true},
   ];
   document.getElementById('sidebarEl').innerHTML=
@@ -391,6 +392,7 @@ function showPage(p){
   else if(p==='emprestimos')renderEmprestimos();
   else if(p==='tomadores')renderTomadores();
   else if(p==='simulador')renderSimulador();
+  else if(p==='perfil')renderPerfil();
   else if(p==='usuarios')renderUsuarios();
 }
 
@@ -441,7 +443,12 @@ async function bootApp(){
   document.getElementById('app-page').style.display='flex';
   try{
     const av=document.getElementById('nav-av');
-    av.textContent=ini(session.nome);av.style.cssText=AV_STYLE[session.role]||AV_STYLE.op;
+    if(session.avatar_url){
+      av.style.cssText='background:transparent;padding:0;overflow:hidden;';
+      av.innerHTML=`<img src="${session.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+    } else {
+      av.textContent=ini(session.nome);av.style.cssText=AV_STYLE[session.role]||AV_STYLE.op;
+    }
     document.getElementById('nav-name').textContent=session.nome||'';
     document.getElementById('nav-role').textContent=session.role==='admin'?'👑 Admin':'👤 Operador';
   }catch(e){}
@@ -1547,6 +1554,130 @@ function calcSim(){
   const refJur=document.getElementById('ref-jur');
   if(refJur&&refJur.value!==String(jur)){refJur.value=String(jur);}
   updateRefTable(val);
+}
+
+
+// ══ PERFIL ══
+function renderPerfil(){
+  const mc=document.getElementById('main-content');
+  const avatarHTML=session.avatar_url
+    ?`<img src="${session.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+    :`<span style="font-size:2rem;font-weight:700">${ini(session.nome)}</span>`;
+  const avStyle=session.avatar_url?'background:transparent':'background:#FFF7ED';
+  mc.innerHTML=`
+    <div class="sec-hdr"><span class="sec-title">Meu Perfil</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:800px">
+      <div class="card">
+        <div class="card-title">Foto de Perfil</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1.25rem">
+          <div id="avatar-preview" style="width:100px;height:100px;border-radius:50%;${avStyle};display:flex;align-items:center;justify-content:center;color:#111;border:3px solid #E5E7EB;overflow:hidden;flex-shrink:0">
+            ${avatarHTML}
+          </div>
+          <div style="text-align:center">
+            <div style="font-weight:600;font-size:16px">${session.nome}</div>
+            <div style="font-size:13px;color:var(--n4);margin-top:2px">@${session.login||''} · ${session.role==='admin'?'👑 Admin':'👤 Operador'}</div>
+          </div>
+          <div style="width:100%">
+            <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem">Selecionar foto</div>
+            <input type="file" id="avatar-file" accept="image/*" onchange="previewAvatar(this)"
+              style="width:100%;padding:.5rem;border:1px dashed #D1D5DB;border-radius:var(--rs);background:#F9FAFB;color:var(--n3);font-size:13px;cursor:pointer"/>
+            <div style="font-size:11px;color:var(--n4);margin-top:.4rem">JPG, PNG ou WEBP · Máximo 2MB</div>
+          </div>
+          <button class="btn btn-p btn-full" onclick="uploadAvatar()">📷 Salvar foto</button>
+          ${session.avatar_url?`<button class="btn btn-g btn-full" onclick="removeAvatar()" style="margin-top:-.5rem">Remover foto</button>`:''}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Trocar Senha</div>
+        <div style="display:flex;flex-direction:column;gap:.85rem">
+          <div class="fg"><span class="lbl">Senha atual</span><input type="password" id="p-pwd-old" placeholder="••••••••"/></div>
+          <div class="fg">
+            <span class="lbl">Nova senha</span>
+            <input type="password" id="p-pwd-new" placeholder="Mínimo 4 caracteres"/>
+          </div>
+          <div class="fg">
+            <span class="lbl">Confirmar nova senha</span>
+            <input type="password" id="p-pwd-new2" placeholder="Repita a nova senha" oninput="checkPwdMatch()"/>
+            <div id="pwd-match" style="margin-top:.3rem;font-size:11px"></div>
+          </div>
+          <button class="btn btn-p btn-full" onclick="savePerfilSenha()">🔑 Alterar senha</button>
+          <div style="padding:.75rem 1rem;background:#F9FAFB;border-radius:var(--rs);font-size:12px;color:var(--n3);border:1px solid #E5E7EB">
+            💡 Use ao menos 4 caracteres. Recomendamos misturar letras, números e símbolos.
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function previewAvatar(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('⚠ Imagem muito grande (máx 2MB)',true);input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('avatar-preview');
+    if(prev)prev.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadAvatar(){
+  const input=document.getElementById('avatar-file');
+  if(!input||!input.files[0]){toast('⚠ Selecione uma foto',true);return;}
+  const file=input.files[0];
+  if(file.size>2*1024*1024){toast('⚠ Imagem muito grande (máx 2MB)',true);return;}
+  const ext=file.name.split('.').pop();
+  const path=`${session.id}/avatar.${ext}`;
+  await sb.storage.from('avatars').remove([path]);
+  const{error:upErr}=await sb.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
+  if(upErr){toast('Erro ao enviar foto',true);return;}
+  const{data:urlData}=sb.storage.from('avatars').getPublicUrl(path);
+  const avatarUrl=urlData.publicUrl+'?t='+Date.now();
+  const{error:dbErr}=await sb.from('users').update({avatar_url:avatarUrl}).eq('id',session.id);
+  if(dbErr){toast('Erro ao salvar',true);return;}
+  session.avatar_url=avatarUrl;saveSession(session);
+  const nav_av=document.getElementById('nav-av');
+  if(nav_av){nav_av.style.cssText='background:transparent;padding:0;overflow:hidden;';nav_av.innerHTML=`<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;}
+  users=users.map(u=>u.id===session.id?{...u,avatar_url:avatarUrl}:u);
+  toast('✓ Foto atualizada!');renderPerfil();
+}
+
+async function removeAvatar(){
+  if(!confirm('Remover foto de perfil?'))return;
+  const ext=session.avatar_url?.split('.').pop()?.split('?')[0]||'jpg';
+  await sb.storage.from('avatars').remove([`${session.id}/avatar.${ext}`]);
+  await sb.from('users').update({avatar_url:null}).eq('id',session.id);
+  session.avatar_url=null;saveSession(session);
+  const nav_av=document.getElementById('nav-av');
+  if(nav_av){nav_av.innerHTML=ini(session.nome);nav_av.style.cssText=AV_STYLE[session.role]||AV_STYLE.op;}
+  users=users.map(u=>u.id===session.id?{...u,avatar_url:null}:u);
+  toast('✓ Foto removida');renderPerfil();
+}
+
+function checkPwdMatch(){
+  const nw=document.getElementById('p-pwd-new')?.value||'';
+  const nw2=document.getElementById('p-pwd-new2')?.value||'';
+  const el=document.getElementById('pwd-match');if(!el||!nw2)return;
+  if(nw===nw2){el.textContent='✓ Senhas coincidem';el.style.color='var(--grn)';}
+  else{el.textContent='✕ Senhas não coincidem';el.style.color='var(--red)';}
+}
+
+async function savePerfilSenha(){
+  const old=document.getElementById('p-pwd-old')?.value||'';
+  const nw=document.getElementById('p-pwd-new')?.value||'';
+  const nw2=document.getElementById('p-pwd-new2')?.value||'';
+  const u=users.find(x=>x.id===session.id);
+  if(!u||u.pass_hash!==hp(old)){toast('⚠ Senha atual incorreta',true);return;}
+  if(nw.length<4){toast('⚠ Nova senha muito curta',true);return;}
+  if(nw!==nw2){toast('⚠ As senhas não coincidem',true);return;}
+  const{error}=await sb.from('users').update({pass_hash:hp(nw)}).eq('id',session.id);
+  if(error){toast('Erro ao salvar',true);return;}
+  users=users.map(x=>x.id===session.id?{...x,pass_hash:hp(nw)}:x);
+  document.getElementById('p-pwd-old').value='';
+  document.getElementById('p-pwd-new').value='';
+  document.getElementById('p-pwd-new2').value='';
+  document.getElementById('pwd-match').textContent='';
+  toast('✓ Senha alterada com sucesso!');
 }
 
 // ══ USUÁRIOS ══
