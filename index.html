@@ -230,11 +230,13 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
         <div class="fg"><span class="lbl">Valor Emprestado (R$) *</span><input type="number" id="emp-valor" placeholder="0,00" min="0" step="0.01" oninput="updateEmpCalc()"/></div>
         <div class="fg"><span class="lbl">Juros (%) *</span>
           <select id="emp-juros" onchange="updateEmpCalc()">
-            <option value="0.2">20%</option>
-            <option value="0.3">30%</option>
+            <option value="0.05">5%</option>
             <option value="0.1">10%</option>
             <option value="0.15">15%</option>
+            <option value="0.2">20%</option>
             <option value="0.25">25%</option>
+            <option value="0.3">30%</option>
+            <option value="0.4">40%</option>
             <option value="0.5">50%</option>
           </select>
         </div>
@@ -876,9 +878,14 @@ function renderSimulador(){
         <div class="fg"><span class="lbl">Valor (R$)</span><input type="number" id="sim-val" placeholder="Ex: 1000" min="0" step="0.01" oninput="calcSim()"/></div>
         <div class="fg"><span class="lbl">Juros (%)</span>
           <select id="sim-jur" onchange="calcSim()">
-            <option value="0.1">10%</option><option value="0.15">15%</option>
-            <option value="0.2" selected>20%</option><option value="0.25">25%</option>
-            <option value="0.3">30%</option><option value="0.5">50%</option>
+            <option value="0.05">5%</option>
+            <option value="0.1">10%</option>
+            <option value="0.15">15%</option>
+            <option value="0.2" selected>20%</option>
+            <option value="0.25">25%</option>
+            <option value="0.3">30%</option>
+            <option value="0.4">40%</option>
+            <option value="0.5">50%</option>
           </select>
         </div>
         <div class="fg"><span class="lbl">Parcelas</span>
