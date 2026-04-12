@@ -651,11 +651,15 @@ async function executeImport(dataRows){
 
   for(const row of dataRows){
     try{
-      const nome=String(row[1]||'').trim();
-      const valor=parseFloat(row[2])||0;
-      const juros=parseFloat(row[3])||0;
-      const telefone=String(row[6]||'').trim();
-      const dataEmp=formatDateForDB(row[7]);
+      const nome=String(row[0]||'').trim();
+      // Suporte ao formato antigo (col 1) e novo (col 0)
+      const valorRaw=row[1]||row[2];
+      const valor=parseFloat(String(valorRaw||'').replace(',','.'))||0;
+      // Juros: pode ser 10 (para 10%) ou 0.1 (decimal)
+      const jurosRaw=parseFloat(String(row[2]||row[3]||'0').replace(',','.'))||0;
+      const juros=jurosRaw>1?jurosRaw/100:jurosRaw; // normaliza para decimal
+      const telefone=String(row[3]||row[6]||'').trim();
+      const dataEmp=formatDateForDB(row[4])||formatDateForDB(row[7]);
       if(!nome||!valor||!dataEmp)continue;
 
       // Criar ou reutilizar tomador
