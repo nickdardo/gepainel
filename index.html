@@ -841,7 +841,7 @@ function updateEmpCalc(){
   if(val>0&&box){
     box.style.display='block';
     document.getElementById('calc-total').textContent=fmtR(total);
-    document.getElementById('calc-parc').textContent=fmtR(lucro);
+    document.getElementById('calc-parc').textContent=fmtR(lucro); // lucro = valor x juros = juros mensal
   } else if(box){box.style.display='none';}
 }
 
@@ -912,7 +912,8 @@ async function saveEmp(){
       // Gerar parcelas
       const valorTotal=parseFloat((valor+valor*juros).toFixed(2));
       if(nparc>0){
-        const valorParc=parseFloat((valorTotal/nparc).toFixed(2));
+        // Cada parcela = apenas os juros mensais (valor * juros)
+        const valorParc=parseFloat((valor*juros).toFixed(2));
         const dataBase=new Date(data+'T12:00:00');
         const parcsPayload=Array.from({length:nparc},(_,i)=>{
           const venc=new Date(dataBase.getTime()+(i+1)*31*24*60*60*1000);
