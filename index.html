@@ -241,8 +241,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
       </div>
       <!-- CÁLCULO AUTOMÁTICO -->
       <div id="emp-calc" style="display:none;margin-top:.75rem;background:var(--grn0);border-radius:var(--rs);padding:1rem;border:1px solid var(--grn1)">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;text-align:center">
-          <div><div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Lucro</div><div style="font-family:var(--FT);font-size:1.3rem;color:var(--grn)" id="calc-lucro">R$ 0,00</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;text-align:center">
           <div><div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Total a receber</div><div style="font-family:var(--FT);font-size:1.3rem;color:#065F46" id="calc-total">R$ 0,00</div></div>
           <div><div style="font-size:10px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:3px">Juros</div><div style="font-family:var(--FT);font-size:1.3rem;color:var(--blu)" id="calc-parc">R$ 0,00</div></div>
         </div>
@@ -251,10 +250,12 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
       <div class="fgrid" style="margin-top:.75rem">
         <div class="fg"><span class="lbl">Nº de Parcelas <span style="font-weight:400;font-size:10px;color:var(--n4);text-transform:none;letter-spacing:0">(conforme negociado)</span></span>
           <select id="emp-nparc" onchange="updateEmpCalc()">
+            <option value="0">♾️ Ilimitado</option>
             <option value="1">1 parcela</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option>
             <option value="4">4 parcelas</option><option value="5">5 parcelas</option><option value="6">6 parcelas</option>
-            <option value="8">8 parcelas</option><option value="10">10 parcelas</option><option value="12">12 parcelas</option>
-            <option value="15">15 parcelas</option><option value="20">20 parcelas</option>
+            <option value="7">7 parcelas</option><option value="8">8 parcelas</option><option value="9">9 parcelas</option>
+            <option value="10">10 parcelas</option><option value="12">12 parcelas</option>
+            <option value="15">15 parcelas</option><option value="18">18 parcelas</option><option value="20">20 parcelas</option>
           </select>
         </div>
         <div class="fg"><span class="lbl">Observação</span><input id="emp-obs" placeholder="Anotações..."/></div>
@@ -560,9 +561,11 @@ function empTbodyHTML(list){
       <td style="font-weight:600;color:var(--grn)">${fmtR(e.valor_total)}</td>
       <td style="color:var(--n4);font-size:12px">${fmtDate(e.data_emprestimo)}</td>
       <td>
-        <button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
-          ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
-        </button>
+        ${parcsEmp.length===0
+          ?`<button class="btn btn-xs btn-g" onclick="addParcela('${e.id}')">♾️ Ilimitado</button>`
+          :`<button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
+            ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
+          </button>`}
       </td>
       <td>
         <div style="display:flex;gap:.3rem">
@@ -580,11 +583,9 @@ function updateEmpCalc(){
   const nparc=parseInt(document.getElementById('emp-nparc')?.value)||1;
   const lucro=val*juros;
   const total=val+lucro;
-  const parc=nparc>0?total/nparc:total;
   const box=document.getElementById('emp-calc');
   if(val>0&&box){
     box.style.display='block';
-    document.getElementById('calc-lucro').textContent=fmtR(lucro);
     document.getElementById('calc-total').textContent=fmtR(total);
     document.getElementById('calc-parc').textContent=fmtR(lucro);
   } else if(box){box.style.display='none';}
@@ -628,7 +629,7 @@ async function saveEmp(){
   const valor=parseFloat(document.getElementById('emp-valor').value);
   const juros=parseFloat(document.getElementById('emp-juros').value);
   const data=document.getElementById('emp-data').value;
-  const nparc=parseInt(document.getElementById('emp-nparc').value)||1;
+  const nparc=parseInt(document.getElementById('emp-nparc').value)||0;
   if(!tomId){toast('⚠ Selecione o tomador',true);return;}
   if(!valor||valor<=0){toast('⚠ Informe o valor',true);return;}
   if(!data){toast('⚠ Informe a data',true);return;}
@@ -637,7 +638,8 @@ async function saveEmp(){
     responsavel:document.getElementById('emp-resp').value.trim()||null,
     garantia:document.getElementById('emp-gar').value.trim()||null,
     local:document.getElementById('emp-loc').value.trim()||null,
-    valor,juros,
+    valor:parseFloat(valor.toFixed(2)),
+    juros:parseFloat(juros.toFixed(4)),
     data_emprestimo:data,
     obs:document.getElementById('emp-obs').value.trim()||null,
     created_by:session.id
@@ -654,22 +656,44 @@ async function saveEmp(){
       if(error)throw error;
       emprestimos.unshift(d);
       // Gerar parcelas
-      const valorTotal=valor+valor*juros;
-      const valorParc=valorTotal/nparc;
-      const dataBase=new Date(data+'T12:00:00');
-      const parcsPayload=Array.from({length:nparc},(_,i)=>{
-        const venc=new Date(dataBase.getTime()+(i+1)*31*24*60*60*1000);
-        return{emprestimo_id:d.id,numero:i+1,vencimento:venc.toISOString().split('T')[0],valor:parseFloat(valorParc.toFixed(2)),status:'pendente'};
-      });
-      const{data:ps,error:pe}=await sb.from('parcelas').insert(parcsPayload).select();
-      if(!pe&&ps)parcelas.push(...ps);
-      toast('✓ Empréstimo registrado! '+nparc+' parcela'+( nparc!==1?'s':'')+' gerada'+(nparc!==1?'s':'')+'.');
+      const valorTotal=parseFloat((valor+valor*juros).toFixed(2));
+      if(nparc>0){
+        const valorParc=parseFloat((valorTotal/nparc).toFixed(2));
+        const dataBase=new Date(data+'T12:00:00');
+        const parcsPayload=Array.from({length:nparc},(_,i)=>{
+          const venc=new Date(dataBase.getTime()+(i+1)*31*24*60*60*1000);
+          return{emprestimo_id:d.id,numero:i+1,vencimento:venc.toISOString().split('T')[0],valor:valorParc,status:'pendente'};
+        });
+        const{data:ps,error:pe}=await sb.from('parcelas').insert(parcsPayload).select();
+        if(!pe&&ps)parcelas.push(...ps);
+        toast('✓ Empréstimo registrado! '+nparc+' parcela'+(nparc!==1?'s':'')+' gerada'+(nparc!==1?'s':'')+'.');
+      } else {
+        toast('✓ Empréstimo registrado! Parcelas: ilimitado.');
+      }
     }
     closeM('emp-modal');
     if(curPage==='dashboard')renderDashboard();
     else renderEmprestimos();
   }catch(e){toast('Erro ao salvar',true);console.error(e);}
   btn.textContent='💾 Salvar Empréstimo';btn.disabled=false;
+}
+
+async function addParcela(empId){
+  const emp=emprestimos.find(e=>e.id===empId);
+  if(!emp)return;
+  const valorTotal=parseFloat((emp.valor+emp.valor*emp.juros).toFixed(2));
+  const dataBase=new Date(emp.data_emprestimo+'T12:00:00');
+  const parcsExist=parcelas.filter(p=>p.emprestimo_id===empId);
+  const nextNum=parcsExist.length+1;
+  const venc=new Date(dataBase.getTime()+nextNum*31*24*60*60*1000);
+  const{data,error}=await sb.from('parcelas').insert({
+    emprestimo_id:empId,numero:nextNum,
+    vencimento:venc.toISOString().split('T')[0],
+    valor:parseFloat(valorTotal.toFixed(2)),status:'pendente'
+  }).select().single();
+  if(error){toast('Erro ao adicionar parcela',true);return;}
+  parcelas.push(data);toast('✓ Parcela adicionada!');
+  openParcelas(empId);
 }
 
 async function deleteEmp(id){
@@ -721,6 +745,11 @@ function openParcelas(empId){
         </div>
       </div>`;
     }).join('')}`;
+  // Add "add parcela" button for ilimitado
+  const footer=document.getElementById('parc-modal').querySelector('.mfooter');
+  footer.innerHTML=`
+    <button class="btn btn-g btn-sm" onclick="closeM('parc-modal')">Fechar</button>
+    <button class="btn btn-grn btn-sm" onclick="addParcela('${empId}')">+ Adicionar Parcela</button>`;
   openM('parc-modal');
 }
 
