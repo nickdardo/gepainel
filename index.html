@@ -1021,8 +1021,11 @@ function openClientView(tomId){
           <div style="font-family:var(--FT);font-size:1.1rem;color:var(--grn)">${fmtR(totalRecebido)}</div>
         </div>
         <div style="background:${atrasadas.length?'var(--red0)':'#F9FAFB'};border-radius:var(--rs);padding:.75rem;text-align:center">
-          <div style="font-size:9px;color:${atrasadas.length?'var(--red)':'var(--n4)'};font-weight:700;text-transform:uppercase;margin-bottom:3px">${atrasadas.length?'⚠️ Em atraso':'⏳ Pendente'}</div>
-          <div style="font-family:var(--FT);font-size:1.1rem;color:${atrasadas.length?'var(--red)':'var(--n4)'}">${atrasadas.length?atrasadas.length+' parcela'+(atrasadas.length>1?'s':''):fmtR(totalPendente)}</div>
+          <div style="font-size:9px;color:${atrasadas.length?'var(--red)':'var(--n4)'};font-weight:700;text-transform:uppercase;margin-bottom:3px">${atrasadas.length?'⚠️ Em atraso':'⚖️ Saldo'}</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:${atrasadas.length?'var(--red)':'var(--n4)'}">
+            ${atrasadas.length?atrasadas.length+' parcela'+(atrasadas.length>1?'s':''):
+              fmtR(empsDoTom.reduce((s,e)=>s+Number(e.saldo_devedor!=null?e.saldo_devedor:e.valor||0),0))}
+          </div>
         </div>
       </div>
       <!-- BARRA PROGRESSO -->
@@ -1084,6 +1087,8 @@ function openParcelas(empId){
   const pend=parcsEmp.filter(p=>p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);
   const atrasadasCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
   const progPct=parcsEmp.length?Math.round(parcsEmp.filter(p=>p.status==='pago').length/parcsEmp.length*100):0;
+  // Saldo devedor = valor original - abatimentos realizados
+  const saldo=parseFloat((emp?.saldo_devedor!=null?emp.saldo_devedor:emp?.valor||0).toFixed(2));
 
   document.getElementById('parc-modal-body').innerHTML=`
     <!-- INFO EMPRÉSTIMO -->
