@@ -233,6 +233,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
         <div class="fg"><span class="lbl">Juros (%) *</span>
           <select id="emp-juros" onchange="updateEmpCalc()">
             <option value="0.05">5%</option>
+            <option value="0.075">7,5%</option>
             <option value="0.1">10%</option>
             <option value="0.15">15%</option>
             <option value="0.2">20%</option>
@@ -1224,6 +1225,7 @@ function renderSimulador(){
         <div class="fg"><span class="lbl">Juros (%)</span>
           <select id="sim-jur" onchange="calcSim()">
             <option value="0.05">5%</option>
+            <option value="0.075">7,5%</option>
             <option value="0.1">10%</option>
             <option value="0.15">15%</option>
             <option value="0.2" selected>20%</option>
@@ -1243,6 +1245,7 @@ function renderSimulador(){
           <span style="font-size:12px;color:var(--n3);font-weight:600">Juros:</span>
           <select id="ref-jur" onchange="updateRefTable()" style="width:auto;padding:.35rem .75rem;font-size:13px;font-weight:600">
             <option value="0.05">5%</option>
+            <option value="0.075">7,5%</option>
             <option value="0.1">10%</option>
             <option value="0.15">15%</option>
             <option value="0.2" selected>20%</option>
