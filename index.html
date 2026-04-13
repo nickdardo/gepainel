@@ -1629,14 +1629,26 @@ function openParcelas(empId){
     </div>`:''}
 
     <!-- LISTA DE PARCELAS -->
-    <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Parcelas</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+      <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em">Parcelas</div>
+      ${parcsEmp.filter(p=>p.status==='pendente').length>0?`
+      <button class="btn btn-xs btn-g" id="btn-sel-parc" onclick="toggleSelecaoParc('${empId}')" style="font-size:11px">Selecionar</button>`:''}
+    </div>
+    <div id="sel-parc-bar" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--rs);padding:.6rem .85rem;margin-bottom:.75rem;display:none;align-items:center;justify-content:space-between;gap:.5rem">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <input type="checkbox" id="chk-parc-all" onchange="toggleAllParcs(this,'${empId}')" style="width:15px;height:15px;cursor:pointer"/>
+        <span id="sel-parc-count" style="font-size:12px;font-weight:600;color:var(--blu)">0 selecionadas</span>
+      </div>
+      <button class="btn btn-xs" style="background:#16A34A;color:#fff;font-weight:700" onclick="confirmarPagamentoLote('${empId}')">✓ Confirmar selecionadas</button>
+    </div>
     ${parcsEmp.length===0?`<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Empréstimo ilimitado — adicione parcelas conforme o pagamento.</div></div>`:''}
     ${parcsEmp.map(p=>{
       const atras=isAtrasada(p);
       const diasAtras=atras?Math.floor((new Date()-new Date(p.vencimento+'T12:00:00'))/(1000*60*60*24)):0;
       const vencHoje=p.status==='pendente'&&p.vencimento===today();
       return`<div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem .85rem;margin-bottom:.4rem;border-radius:var(--rs);border:1px solid ${p.status==='pago'?'#D1FAE5':atras?'#FECACA':vencHoje?'#FDE68A':'#E5E7EB'};background:${p.status==='pago'?'#F0FDF4':atras?'#FEF2F2':vencHoje?'#FFFBEB':'#FAFAFA'}">
-        <div>
+        ${p.status==='pendente'?`<input type="checkbox" class="chk-parc" data-id="${p.id}" onchange="onChkParcChange('${empId}')" style="width:15px;height:15px;cursor:pointer;margin-right:.5rem;flex-shrink:0;display:none"/>`:'<div style="width:21px;flex-shrink:0"></div>'}
+        <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':vencHoje?'var(--amb)':'var(--n1)'}">
             ${p.numero}ª Parcela
             ${atras?`<span style="font-size:10px;font-weight:400;background:var(--red);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">${diasAtras}d atraso</span>`:''}
@@ -1650,7 +1662,7 @@ function openParcelas(empId){
         <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
           <span style="font-weight:700;font-size:14px;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':'var(--n1)'}">${fmtR(p.valor)}</span>
           ${p.status==='pendente'?`
-            <button class="btn btn-xs btn-grn" onclick="confirmarPagamento('${p.id}','${empId}')" style="font-weight:700">Confirmar</button>
+            <button class="btn btn-xs btn-grn btn-confirmar-parc" data-pid="${p.id}" onclick="confirmarPagamento('${p.id}','${empId}')" style="font-weight:700">Confirmar</button>
             <button class="btn btn-xs btn-d" onclick="deleteParcela('${p.id}','${empId}')" title="Remover parcela">✕</button>
           `:`<button class="btn btn-xs btn-g" onclick="marcarPendente('${p.id}','${empId}')" title="Reverter para pendente" style="font-size:11px">Reverter</button>`}
         </div>
@@ -1884,6 +1896,80 @@ async function marcarPendente(id, empId){
   parcelas=parcelas.map(p=>p.id===id?data:p);
   toast('Parcela revertida para pendente');
   openParcelas(empId||data.emprestimo_id);
+  if(curPage==='dashboard')renderDashboard();
+  else if(curPage==='emprestimos')renderEmprestimos();
+}
+
+
+// ══ SELEÇÃO EM LOTE DE PARCELAS ══
+function toggleSelecaoParc(empId){
+  const bar=document.getElementById('sel-parc-bar');
+  const btn=document.getElementById('btn-sel-parc');
+  const chks=document.querySelectorAll('.chk-parc');
+  const btns=document.querySelectorAll('.btn-confirmar-parc');
+  if(!bar)return;
+  const abrindo=bar.style.display==='none'||bar.style.display==='';
+  if(abrindo){
+    bar.style.display='flex';
+    chks.forEach(c=>c.style.display='');
+    btns.forEach(b=>b.style.display='none');
+    if(btn)btn.textContent='Cancelar';
+  } else {
+    bar.style.display='none';
+    chks.forEach(c=>{c.style.display='none';c.checked=false;});
+    btns.forEach(b=>b.style.display='');
+    const all=document.getElementById('chk-parc-all');
+    if(all)all.checked=false;
+    atualizarContadorParc(empId);
+    if(btn)btn.textContent='Selecionar';
+  }
+}
+
+function toggleAllParcs(chk, empId){
+  document.querySelectorAll('.chk-parc').forEach(c=>c.checked=chk.checked);
+  atualizarContadorParc(empId);
+}
+
+function onChkParcChange(empId){
+  const all=document.getElementById('chk-parc-all');
+  const chks=document.querySelectorAll('.chk-parc');
+  const checked=document.querySelectorAll('.chk-parc:checked');
+  if(all)all.checked=checked.length===chks.length&&chks.length>0;
+  atualizarContadorParc(empId);
+}
+
+function atualizarContadorParc(empId){
+  const checked=document.querySelectorAll('.chk-parc:checked');
+  const cnt=document.getElementById('sel-parc-count');
+  const emp=emprestimos.find(e=>e.id===empId);
+  if(!cnt||!emp)return;
+  const total=checked.length;
+  const valorTotal=parseFloat((emp.valor*emp.juros*total).toFixed(2));
+  cnt.textContent=total>0?`${total} selecionada${total>1?'s':''} · ${fmtR(valorTotal)}`:'0 selecionadas';
+}
+
+async function confirmarPagamentoLote(empId){
+  const checked=[...document.querySelectorAll('.chk-parc:checked')];
+  if(!checked.length){toast('⚠ Selecione ao menos uma parcela',true);return;}
+  const ids=checked.map(c=>c.dataset.id);
+  if(!confirm(`Confirmar pagamento de ${ids.length} parcela${ids.length>1?'s':''} como pagas hoje?`))return;
+
+  let ok=0;
+  for(const id of ids){
+    const{data,error}=await sb.from('parcelas').update({
+      status:'pago', pago_em:today(), valor_pago:null, abatimento:null
+    }).eq('id',id).select().single();
+    if(!error&&data){
+      parcelas=parcelas.map(p=>p.id===id?data:p);
+      ok++;
+    }
+  }
+
+  // Gera próxima parcela automática se necessário
+  await autoGerarProximaParcela(empId);
+
+  toast(`✓ ${ok} parcela${ok>1?'s':''} confirmada${ok>1?'s':''}!`);
+  openParcelas(empId);
   if(curPage==='dashboard')renderDashboard();
   else if(curPage==='emprestimos')renderEmprestimos();
 }
