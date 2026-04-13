@@ -677,7 +677,7 @@ function doLogout(){
   document.getElementById('login-page').style.display='';
   document.getElementById('lu').value='';document.getElementById('lp').value='';
   document.getElementById('login-error').style.display='none';
-  tomadores=[];emprestimos=[];parcelas=[];users=[];
+  tomadores=[];emprestimos=[];parcelas=[];users=[];_dashUserId=null;
   if(_notifInterval){clearInterval(_notifInterval);_notifInterval=null;}
   // Recarrega credenciais salvas após logout
   setTimeout(loadSavedCreds,50);
@@ -709,27 +709,101 @@ async function loadAll(){
   });
 }
 
-// ══ DASHBOARD ══
-function renderDashboard(){
+
+function renderDashboardSelector(){
   const mc=document.getElementById('main-content');
-  const totalEmp=emprestimos.reduce((s,e)=>s+Number(e.valor||0),0);
-  const totalLucro=emprestimos.reduce((s,e)=>s+Number(e.lucro||0),0);
-  const pRecebido=parcelas.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor||0),0);
-  const pPendente=parcelas.filter(p=>p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);
-  const atrasadas=parcelas.filter(p=>isAtrasada(p));
-  const vencHoje=parcelas.filter(p=>p.status==='pendente'&&p.vencimento===today());
+  const ops=users.filter(u=>u.role==='admin'||u.role==='op');
+
+  const cards=ops.map(u=>{
+    const emps=emprestimos.filter(e=>e.owner_id===u.id);
+    const empIds=new Set(emps.map(e=>e.id));
+    const parcs=parcelas.filter(p=>empIds.has(p.emprestimo_id));
+    const totalEmp=emps.reduce((s,e)=>s+Number(e.valor||0),0);
+    const atras=parcs.filter(p=>isAtrasada(p)).length;
+    const pendentes=parcs.filter(p=>p.status==='pendente').length;
+    const av=u.role==='admin'?'background:#FDE68A;color:#78350F':'background:#FFF7ED;color:#EA580C';
+    return`<div onclick="_dashUserId='${u.id}';renderDashboard()" style="background:var(--card);border:1px solid #E5E7EB;border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:all .15s;box-shadow:var(--sh)" onmouseover="this.style.borderColor='#EA580C';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#E5E7EB';this.style.transform=''">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+        <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;${av}">${ini(u.nome)}</div>
+        <div>
+          <div style="font-weight:700;font-size:15px;color:var(--n1)">${u.nome}</div>
+          <div style="font-size:12px;color:var(--n4);margin-top:1px">@${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'3°JOB'}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center">
+        <div style="background:#EFF6FF;border-radius:var(--rs);padding:.5rem">
+          <div style="font-size:9px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:2px">Empréstimos</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:var(--blu)">${emps.length}</div>
+        </div>
+        <div style="background:#FFF7ED;border-radius:var(--rs);padding:.5rem">
+          <div style="font-size:9px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:2px">Pendentes</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:var(--grn)">${pendentes}</div>
+        </div>
+        <div style="background:${atras?'var(--red0)':'#F9FAFB'};border-radius:var(--rs);padding:.5rem">
+          <div style="font-size:9px;color:${atras?'var(--red)':'var(--n4)'};font-weight:700;text-transform:uppercase;margin-bottom:2px">Atrasos</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:${atras?'var(--red)':'var(--n4)'}">${atras}</div>
+        </div>
+      </div>
+      <div style="margin-top:.85rem;font-size:12px;font-weight:600;color:var(--blu);text-align:center">Ver dashboard →</div>
+    </div>`;
+  }).join('');
 
   mc.innerHTML=`
-    <div class="sec-hdr"><span class="sec-title">Dashboard</span>
+    <div class="sec-hdr"><span class="sec-title">Dashboard</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">${cards}</div>`;
+}
+
+// ══ DASHBOARD ══
+let _dashUserId = null; // null = todos (admin), ou id do usuário filtrado
+
+function renderDashboard(){
+  const mc=document.getElementById('main-content');
+
+  // Admin: se nenhum usuário selecionado, mostra seletor
+  if(session.role==='admin' && _dashUserId===null){
+    renderDashboardSelector();
+    return;
+  }
+
+  // Filtra dados pelo usuário selecionado
+  const uid = session.role==='admin' ? _dashUserId : session.id;
+  const emps   = uid ? emprestimos.filter(e=>e.owner_id===uid) : emprestimos;
+  const empIds = new Set(emps.map(e=>e.id));
+  const parcs  = parcelas.filter(p=>empIds.has(p.emprestimo_id));
+  const toms   = uid ? tomadores.filter(t=>t.owner_id===uid) : tomadores;
+  const userAtivo = uid ? users.find(u=>u.id===uid) : null;
+
+  const totalEmp   = emps.reduce((s,e)=>s+Number(e.valor||0),0);
+  const totalLucro = emps.reduce((s,e)=>s+Number(e.lucro||0),0);
+  const pRecebido  = parcs.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor||0),0);
+  const pPendente  = parcs.filter(p=>p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);
+  const atrasadas  = parcs.filter(p=>isAtrasada(p));
+  const vencHoje   = parcs.filter(p=>p.status==='pendente'&&p.vencimento===today());
+
+  // Sobrescreve variáveis locais para reusar nos cards
+  const emprestimos_dash = emps;
+  const parcelas_dash    = parcs;
+
+  const voltarBtn = session.role==='admin'
+    ? `<button class="btn btn-g btn-sm" onclick="_dashUserId=null;renderDashboard()">← Todos os operadores</button>`
+    : '';
+
+  mc.innerHTML=`
+    <div class="sec-hdr">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        ${voltarBtn}
+        <span class="sec-title">${userAtivo ? userAtivo.nome.split(' ')[0] : 'Dashboard'}</span>
+        ${userAtivo ? `<span class="bdg ${userAtivo.role==='admin'?'bdg-admin':'bdg-op'}">${userAtivo.role==='admin'?'Admin':'3°JOB'}</span>` : ''}
+      </div>
       <div style="display:flex;gap:.5rem">
         <button class="btn btn-grn btn-sm" onclick="openEmpModal(null)">+ Novo Empréstimo</button>
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-value" style="color:var(--blu)">${fmtR(totalEmp)}</div><div class="stat-sub">${emprestimos.length} empréstimo${emprestimos.length!==1?'s':''}</div></div>
+      <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-value" style="color:var(--blu)">${fmtR(totalEmp)}</div><div class="stat-sub">${emps.length} empréstimo${emps.length!==1?'s':''}</div></div>
       <div class="stat"><div class="stat-label">Lucro Esperado</div><div class="stat-value" style="color:var(--grn)">${fmtR(totalLucro)}</div><div class="stat-sub">em juros</div></div>
       <div class="stat"><div class="stat-label">Recebido</div><div class="stat-value" style="color:var(--grn)">${fmtR(pRecebido)}</div><div class="stat-sub">em parcelas pagas</div></div>
-      <div class="stat"><div class="stat-label">Pendente</div><div class="stat-value" style="color:var(--amb)">${fmtR(pPendente)}</div><div class="stat-sub">${parcelas.filter(p=>p.status==='pendente').length} parcelas</div></div>
+      <div class="stat"><div class="stat-label">Pendente</div><div class="stat-value" style="color:var(--amb)">${fmtR(pPendente)}</div><div class="stat-sub">${parcs.filter(p=>p.status==='pendente').length} parcelas</div></div>
     </div>
     ${(()=>{
       const em3=new Date();em3.setDate(em3.getDate()+3);
@@ -746,7 +820,7 @@ function renderDashboard(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="card">
         <div class="card-title">Últimos Empréstimos</div>
-        ${emprestimos.slice(0,6).map(e=>{
+        ${emps.slice(0,6).map(e=>{
           const tom=tomadores.find(t=>t.id===e.tomador_id);
           const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
           const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
@@ -2256,68 +2330,82 @@ async function ativarNotificacoes(){
   }
 }
 
+function dispararNotificacao(titulo, corpo, tag){
+  if(Notification.permission!=='granted')return;
+  if(navigator.vibrate)navigator.vibrate([300,100,300,100,500]);
+  const icon="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>";
+  const n=new Notification(titulo,{body:corpo,icon,tag:tag||'agpainel',renotify:true});
+  n.onclick=()=>{window.focus();showPage('dashboard');n.close();};
+}
+
 function testarNotificacao(){
-  if(Notification.permission !== 'granted'){
-    toast('⚠ Ative os alertas primeiro',true); return;
-  }
-  const hoje = new Date();
-  const em7  = new Date(); em7.setDate(hoje.getDate()+7);
-  const pendentes = parcelas.filter(p=>{
-    if(p.status !== 'pendente') return false;
-    const v = new Date(p.vencimento+'T12:00:00');
-    return isAtrasada(p) || v <= em7;
+  // Botão de teste manual — dispara uma notificação de exemplo imediatamente
+  if(Notification.permission!=='granted'){toast('⚠ Ative os alertas primeiro',true);return;}
+  dispararNotificacao(
+    '🔔 AGPainel — Teste de alerta',
+    'Os alertas estão funcionando! Você receberá avisos automáticos de vencimento.',
+    'agpainel-teste'
+  );
+  toast('✓ Notificação de teste enviada!');
+}
+
+function verificarVencimentos(){
+  if(Notification.permission!=='granted'||!session)return;
+
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+
+  // Controle de quais alertas já foram disparados hoje
+  let jaDisparados={};
+  try{jaDisparados=JSON.parse(localStorage.getItem('ep_notif_sent')||'{}');}catch(e){}
+
+  const alertas=[];
+
+  parcelas.filter(p=>p.status==='pendente').forEach(p=>{
+    const venc=new Date(p.vencimento+'T12:00:00'); venc.setHours(0,0,0,0);
+    const diff=Math.round((venc-hoje)/(1000*60*60*24));
+    const emp=emprestimos.find(e=>e.id===p.emprestimo_id);
+    const tom=tomadores.find(t=>t.id===emp?.tomador_id);
+    if(!tom)return;
+
+    if(diff===7){
+      const key='7d_'+p.id;
+      if(!jaDisparados[key]){
+        alertas.push({key,titulo:'⏰ Vence em 7 dias',corpo:tom.nome+' — '+fmtR(p.valor)+' ('+fmtDate(p.vencimento)+')',tag:'agpainel-7d-'+p.id});
+        jaDisparados[key]=today();
+      }
+    } else if(diff===3){
+      const key='3d_'+p.id;
+      if(!jaDisparados[key]){
+        alertas.push({key,titulo:'🔴 Vence em 3 dias',corpo:tom.nome+' — '+fmtR(p.valor)+' ('+fmtDate(p.vencimento)+')',tag:'agpainel-3d-'+p.id});
+        jaDisparados[key]=today();
+      }
+    } else if(diff<0){
+      const key='atras_'+p.id+'_'+today();
+      if(!jaDisparados[key]){
+        alertas.push({key,titulo:'⛔ Parcela em atraso',corpo:tom.nome+' — '+fmtR(p.valor)+' (venceu '+fmtDate(p.vencimento)+')',tag:'agpainel-atras-'+p.id});
+        jaDisparados[key]=today();
+      }
+    }
   });
 
-  if(!pendentes.length){
-    new Notification('AGPainel ✓', {
-      body: 'Nenhuma parcela em atraso ou vencendo em 7 dias.',
-      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>"
-    });
-    return;
-  }
+  // Dispara cada alerta com intervalo de 900ms para não sobrepor
+  alertas.forEach((a,i)=>setTimeout(()=>dispararNotificacao(a.titulo,a.corpo,a.tag),i*900));
 
-  const atras  = pendentes.filter(p => isAtrasada(p));
-  const hoje3  = new Date(); hoje3.setDate(hoje.getDate()+3);
-  const venc3  = pendentes.filter(p => !isAtrasada(p) && new Date(p.vencimento+'T12:00:00') <= hoje3);
-  const venc7  = pendentes.filter(p => !isAtrasada(p) && new Date(p.vencimento+'T12:00:00') > hoje3);
-
-  let titulo = '⚠ AGPainel — Cobranças pendentes';
-  let corpo  = '';
-  if(atras.length)  corpo += `⛔ ${atras.length} em atraso
-`;
-  if(venc3.length)  corpo += `🔴 ${venc3.length} vencem em 3 dias
-`;
-  if(venc7.length)  corpo += `⏰ ${venc7.length} vencem em 7 dias`;
-
-  // Vibração no celular
-  if(navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
-
-  const n = new Notification(titulo, {
-    body: corpo.trim(),
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>",
-    badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23EA580C'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='white'>$</text></svg>",
-    tag: 'agpainel-avisos',
-    renotify: true
+  // Limpa chaves com mais de 10 dias e salva
+  const limite=new Date(); limite.setDate(limite.getDate()-10);
+  Object.keys(jaDisparados).forEach(k=>{
+    try{if(new Date(jaDisparados[k]+'T12:00:00')<limite)delete jaDisparados[k];}catch(e){}
   });
-  n.onclick = () => { window.focus(); showPage('dashboard'); n.close(); };
-  toast('✓ Notificação enviada!');
+  try{localStorage.setItem('ep_notif_sent',JSON.stringify(jaDisparados));}catch(e){}
 }
 
 function iniciarVerificacaoAutomatica(){
-  if(_notifInterval) clearInterval(_notifInterval);
-  // Verifica a cada 30 minutos
-  _notifInterval = setInterval(()=>{
-    if(Notification.permission === 'granted' && session){
-      const hoje = new Date();
-      const em7  = new Date(); em7.setDate(hoje.getDate()+7);
-      const urgentes = parcelas.filter(p=>{
-        if(p.status !== 'pendente') return false;
-        const v = new Date(p.vencimento+'T12:00:00');
-        return isAtrasada(p) || v <= em7;
-      });
-      if(urgentes.length > 0) testarNotificacao();
-    }
-  }, 30 * 60 * 1000);
+  if(_notifInterval)clearInterval(_notifInterval);
+  // Verifica imediatamente e depois a cada 30 minutos
+  setTimeout(verificarVencimentos,1500);
+  _notifInterval=setInterval(()=>{
+    if(Notification.permission==='granted'&&session)verificarVencimentos();
+  },30*60*1000);
 }
 
 // ══ WHATSAPP GESTOR ══
