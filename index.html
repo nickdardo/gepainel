@@ -1272,8 +1272,8 @@ function applySortTom(list){
     else if(col==='ocupacao'){va=(a.ocupacao||'').toLowerCase();vb=(b.ocupacao||'').toLowerCase();}
     else if(col==='emps'){va=emprestimos.filter(e=>e.tomador_id===a.id).length;vb=emprestimos.filter(e=>e.tomador_id===b.id).length;}
     else if(col==='devido'){
-      const getDevido=t=>{const emps=emprestimos.filter(e=>e.tomador_id===t.id);return parcelas.filter(p=>emps.some(e=>e.id===p.emprestimo_id)&&p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);};
-      va=getDevido(a);vb=getDevido(b);
+      const getTotal=t=>{return emprestimos.filter(e=>e.tomador_id===t.id).reduce((s,e)=>s+Number(e.valor||0),0);};
+      va=getTotal(a);vb=getTotal(b);
     }
     if(va<vb)return dir==='asc'?-1:1;
     if(va>vb)return dir==='asc'?1:-1;
@@ -1905,7 +1905,7 @@ function renderTomadores(){
           <th class="sortable" id="th-tom-contato" onclick="sortTom('contato')">Contato<span class="sort-icon"></span></th>
           <th class="hide-mobile sortable" id="th-tom-ocupacao" onclick="sortTom('ocupacao')">Ocupação<span class="sort-icon"></span></th>
           <th class="sortable" id="th-tom-emps" onclick="sortTom('emps')">Empréstimos<span class="sort-icon"></span></th>
-          <th class="sortable" id="th-tom-devido" onclick="sortTom('devido')">Total Devido<span class="sort-icon"></span></th>
+          <th class="sortable" id="th-tom-devido" onclick="sortTom('devido')">Total Emprestado<span class="sort-icon"></span></th>
           <th></th>
         </tr></thead>
         <tbody id="tom-tbody">${tomTbodyHTML(tomadores)}</tbody>
@@ -1924,15 +1924,14 @@ function tomTbodyHTML(list){
   if(!list.length)return`<tr><td colspan="8"><div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum tomador.</div></div></td></tr>`;
   return list.map((t,i)=>{
     const emps=emprestimos.filter(e=>e.tomador_id===t.id);
-    const parcsT=parcelas.filter(p=>emps.some(e=>e.id===p.emprestimo_id)&&p.status==='pendente');
-    const devido=parcsT.reduce((s,p)=>s+Number(p.valor||0),0);
+    const totalEmprestado=emps.reduce((s,e)=>s+Number(e.valor||0),0);
     return`<tr>
       <td style="color:var(--n4);font-size:12px">${i+1}</td>
       <td style="font-weight:600">${t.nome}</td>
       <td style="color:var(--n3)">${t.contato?`<a href="https://wa.me/55${t.contato.replace(/\D/g,'')}" target="_blank" style="color:var(--grn);text-decoration:none">${t.contato}</a>`:'—'}</td>
       <td class="hide-mobile" style="color:var(--n3)">${t.ocupacao||'—'}</td>
       <td style="font-weight:600;color:var(--blu)">${emps.length}</td>
-      <td style="font-weight:700;color:${devido>0?'var(--amb)':'var(--grn)'}">${fmtR(devido)}</td>
+      <td style="font-weight:700;color:${totalEmprestado>0?'var(--blu)':'var(--n4)'}">${fmtR(totalEmprestado)}</td>
       <td><div style="display:flex;gap:.3rem">
         <button class="btn btn-xs btn-g" onclick="openTomModal('${t.id}')">✏</button>
         <button class="btn btn-xs btn-d" onclick="deleteTom('${t.id}')">✕</button>
