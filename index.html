@@ -153,6 +153,58 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
 
 @media(max-width:900px){.hamburger{display:flex}.sidebar{position:fixed;top:56px;left:-240px;height:calc(100vh - 56px);z-index:95}.sidebar.open{left:0;box-shadow:var(--shm)}.stats{grid-template-columns:1fr 1fr}.fgrid{grid-template-columns:1fr}.full{grid-column:1}}
 @media(max-width:600px){.content{padding:1rem}.stats{grid-template-columns:1fr 1fr}.nav-user span:not(.nav-badge){display:none}}
+/* ── DARK MODE ─────────────────────────────────────────────── */
+body.dark{--bg:#0F172A;--card:#1E293B;--border:#334155;--border2:#475569;--n1:#F1F5F9;--n2:#CBD5E1;--n3:#94A3B8;--n4:#64748B;--grn0:#1C0E04;--grn1:#431407;--red0:#1F0808;--red1:#7F1D1D;--amb0:#1A1003;--amb1:#78350F;--blu0:#0F1E3D}
+body.dark .nav{background:#020617;border-color:#1E293B}
+body.dark .sidebar{background:#0F172A;border-color:#1E293B}
+body.dark .sidebar-footer{border-color:#1E293B}
+body.dark .sidebar-item:hover{background:#1E293B}
+body.dark .sidebar-item.active{background:#1E293B}
+body.dark .card,.dark .stat,.dark .modal{background:#1E293B!important;border-color:#334155!important}
+body.dark input,body.dark select,body.dark textarea{background:#1E293B;border-color:#334155;color:var(--n1)}
+body.dark .tbl-wrap{border-color:#334155}
+body.dark table thead th{background:#1E293B;border-color:#334155}
+body.dark tbody tr{border-color:#1E293B}
+body.dark tbody tr:hover{background:#1E293B}
+body.dark .mhdr,.dark .mfooter{border-color:#334155!important}
+body.dark .logout-btn{border-color:#334155;color:#94A3B8}
+body.dark .warn-box{background:#1A1003;border-color:#78350F}
+body.dark .info-box{background:#1C0E04;border-color:#431407}
+.dark-btn{background:transparent;border:1px solid #374151;color:#9CA3AF;width:30px;height:30px;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+.dark-btn:hover{background:#1F2937;color:#fff}
+.search-nav-btn{background:transparent;border:1px solid #374151;color:#9CA3AF;width:30px;height:30px;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+.search-nav-btn:hover{background:#1F2937;color:#fff}
+
+/* ── FILTRO PILLS ───────────────────────────────────────────── */
+.filter-pills{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.pill{padding:.3rem .9rem;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #E5E7EB;background:var(--card);color:var(--n3);transition:all .12s}
+.pill:hover{border-color:var(--n3);color:var(--n1)}
+.pill.active{background:var(--blk);color:#fff;border-color:var(--blk)}
+.pill-red.active{background:var(--red);border-color:var(--red);color:#fff}
+.pill-amb.active{background:var(--amb);border-color:var(--amb);color:#fff}
+.pill-grn.active{background:#16A34A;border-color:#16A34A;color:#fff}
+
+/* ── BUSCA GLOBAL ───────────────────────────────────────────── */
+.gsearch-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:5rem 1rem}
+.gsearch-ov.open{display:flex}
+.gsearch-box{background:#fff;border-radius:var(--r);width:100%;max-width:600px;box-shadow:var(--shm);overflow:hidden}
+.gsearch-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;border-bottom:1px solid #E5E7EB}
+.gsearch-row input{border:none;outline:none;font-size:16px;font-family:var(--FB);color:var(--n1);flex:1;background:transparent}
+.gsearch-results{max-height:420px;overflow-y:auto}
+.gsearch-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.25rem;cursor:pointer;border-bottom:1px solid #F3F4F6;transition:background .1s;gap:.5rem}
+.gsearch-item:hover{background:#FFF7ED}
+.gsearch-empty{padding:2rem;text-align:center;color:var(--n4);font-size:14px}
+.gsearch-tag{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700;flex-shrink:0}
+
+/* ── PRINT ──────────────────────────────────────────────────── */
+@media print{
+  .nav,.sidebar,.sb-overlay,.filter-pills,.btn,button,.mbd,.toast{display:none!important}
+  .app-body{display:block!important}
+  .content{padding:0!important}
+  body,html{background:#fff!important}
+  .stat,.card{box-shadow:none!important;border:1px solid #ddd!important}
+}
+
 </style>
 </head>
 <body>
@@ -214,9 +266,22 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
         <span id="nav-name"></span>
         <span class="nav-badge" id="nav-role"></span>
       </div>
+      <button class="search-nav-btn" onclick="openGlobalSearch()" title="Busca global"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      <button class="dark-btn" id="dark-toggle" onclick="toggleDarkMode()" title="Alternar tema"></button>
       <button class="logout-btn" onclick="doLogout()">Sair</button>
     </div>
   </nav>
+  <!-- BUSCA GLOBAL -->
+  <div class="gsearch-ov" id="gsearch-ov" onclick="if(event.target===this)closeGlobalSearch()">
+    <div class="gsearch-box">
+      <div class="gsearch-row">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="gsearch-input" placeholder="Buscar tomador, empréstimo, valor..." oninput="runGlobalSearch()" onkeydown="if(event.key==='Escape')closeGlobalSearch()"/>
+        <button onclick="closeGlobalSearch()" style="background:none;border:none;cursor:pointer;color:#9CA3AF;font-size:18px;line-height:1">✕</button>
+      </div>
+      <div class="gsearch-results" id="gsearch-results"><div class="gsearch-empty">Digite para buscar...</div></div>
+    </div>
+  </div>
   <div class="app-body">
     <aside class="sidebar" id="sidebarEl"></aside>
     <main class="content" id="main-content"></main>
@@ -291,6 +356,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
       <div class="fgrid">
         <div class="fg full"><span class="lbl">Nome *</span><input id="tom-nome" placeholder="Nome completo"/></div>
         <div class="fg full"><span class="lbl">Contato</span><input id="tom-cont" placeholder="(91) 99999-0000" maxlength="15" oninput="maskTel(this)" inputmode="numeric"/></div>
+        <div class="fg full"><span class="lbl">Ocupação</span><input id="tom-ocup" placeholder="Ex: Soldado, Motorista, Comerciante..."/></div>
       </div>
     </div>
     <div class="mfooter"><button class="btn btn-g btn-sm" onclick="closeM('tom-modal')">Cancelar</button><button class="btn btn-p btn-sm" onclick="saveTom()">Salvar</button></div>
@@ -385,6 +451,7 @@ const LUCIDE_ICONS={
   simulador:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="12" y1="18" x2="14" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/></svg>',
   perfil:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   usuarios:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  relatorio:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
 };
 
 function buildSidebar(){
@@ -394,6 +461,7 @@ function buildSidebar(){
     {id:'tomadores',icon:'tomadores',label:'Tomadores'},
     {id:'simulador',icon:'simulador',label:'Simulador'},
     {id:'perfil',icon:'perfil',label:'Meu Perfil'},
+    {id:'relatorio',icon:'relatorio',label:'Relatório',admin:true},
     {id:'usuarios',icon:'usuarios',label:'Usuários',admin:true},
   ];
   document.getElementById('sidebarEl').innerHTML=
@@ -416,6 +484,7 @@ function showPage(p){
   else if(p==='simulador')renderSimulador();
   else if(p==='perfil')renderPerfil();
   else if(p==='usuarios')renderUsuarios();
+  else if(p==='relatorio')renderRelatorio();
 }
 
 // ══ AUTH ══
@@ -518,7 +587,7 @@ async function bootApp(){
     document.getElementById('nav-role').textContent=session.role==='admin'?'Admin':'3°JOB';
   }catch(e){}
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
-  buildSidebar();showPage('dashboard');
+  buildSidebar();showPage('dashboard');setTimeout(renderDashChart,200);
 }
 
 function doLogout(){
@@ -578,8 +647,19 @@ function renderDashboard(){
       <div class="stat"><div class="stat-label">Recebido</div><div class="stat-value" style="color:var(--grn)">${fmtR(pRecebido)}</div><div class="stat-sub">em parcelas pagas</div></div>
       <div class="stat"><div class="stat-label">Pendente</div><div class="stat-value" style="color:var(--amb)">${fmtR(pPendente)}</div><div class="stat-sub">${parcelas.filter(p=>p.status==='pendente').length} parcelas</div></div>
     </div>
-    ${atrasadas.length?`<div class="warn-box"><strong>${atrasadas.length} parcela${atrasadas.length!==1?'s':''} em atraso!</strong> Verifique os empréstimos pendentes.</div>`:''}
-    ${vencHoje.length?`<div class="info-box"><strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`:''}
+    ${(()=>{
+      const em3=new Date();em3.setDate(em3.getDate()+3);
+      const em7=new Date();em7.setDate(em7.getDate()+7);
+      const venc3=parcelas.filter(p=>p.status==='pendente'&&new Date(p.vencimento+'T12:00:00')>new Date()&&new Date(p.vencimento+'T12:00:00')<=em3);
+      const venc7=parcelas.filter(p=>p.status==='pendente'&&new Date(p.vencimento+'T12:00:00')>em3&&new Date(p.vencimento+'T12:00:00')<=em7);
+      let out='';
+      if(atrasadas.length)out+=`<div class="warn-box">⚠ <strong>${atrasadas.length} parcela${atrasadas.length!==1?'s':''} em atraso!</strong> Verifique os empréstimos pendentes.</div>`;
+      if(vencHoje.length)out+=`<div class="warn-box" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B">🔴 <strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`;
+      if(venc3.length)out+=`<div class="info-box" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E">⏰ <strong>${venc3.length} parcela${venc3.length!==1?'s':''}</strong> vence${venc3.length===1?'':'m'} nos próximos 3 dias.</div>`;
+      if(venc7.length)out+=`<div class="info-box">📅 <strong>${venc7.length} parcela${venc7.length!==1?'s':''}</strong> vence${venc7.length===1?'':'m'} em até 7 dias.</div>`;
+      return out;
+    })()}
+    <div id="dash-chart-wrap" style="margin-bottom:1rem"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="card">
         <div class="card-title">Últimos Empréstimos</div>
@@ -622,6 +702,27 @@ function renderDashboard(){
 }
 
 // ══ EMPRÉSTIMOS ══
+
+// ══ GRÁFICO DASHBOARD ══
+function renderDashChart(){
+  const wrap=document.getElementById('dash-chart-wrap');
+  if(!wrap)return;
+  const meses=[];
+  for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);meses.push({label:d.toLocaleString('pt-BR',{month:'short',year:'2-digit'}),m:d.getMonth(),y:d.getFullYear()});}
+  const empData=meses.map(m=>emprestimos.filter(e=>{const d=new Date(e.data_emprestimo+'T12:00:00');return d.getMonth()===m.m&&d.getFullYear()===m.y;}).reduce((s,e)=>s+Number(e.valor||0),0));
+  const recData=meses.map(m=>parcelas.filter(p=>p.status==='pago'&&p.pago_em).filter(p=>{const d=new Date(p.pago_em+'T12:00:00');return d.getMonth()===m.m&&d.getFullYear()===m.y;}).reduce((s,p)=>s+Number(p.valor_pago||p.valor||0),0));
+  const maxV=Math.max(...empData,...recData,1);
+  const barW=60;const gap=18;const h=140;const padL=10;const totalW=meses.length*(barW+gap)+padL;
+  const toY=v=>h-Math.round((v/maxV)*h);
+  const bars=meses.map((m,i)=>{
+    const x=padL+i*(barW+gap);
+    const eH=Math.round((empData[i]/maxV)*h)||2;
+    const rH=Math.round((recData[i]/maxV)*h)||2;
+    return`<rect x="${x}" y="${h-eH}" width="${barW/2-2}" height="${eH}" fill="#2563EB" rx="3" opacity=".85"/><rect x="${x+barW/2}" y="${h-rH}" width="${barW/2-2}" height="${rH}" fill="#16A34A" rx="3" opacity=".85"/><text x="${x+barW/2}" y="${h+14}" text-anchor="middle" font-size="10" fill="#9CA3AF">${m.label}</text>`;
+  }).join('');
+  wrap.innerHTML=`<div class="card" style="padding:1rem 1.25rem"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem"><span style="font-family:var(--FT);font-size:1.05rem">Últimos 6 meses</span><div style="display:flex;gap:1rem;font-size:11px"><span><span style="display:inline-block;width:10px;height:10px;background:#2563EB;border-radius:2px;margin-right:4px"></span>Emprestado</span><span><span style="display:inline-block;width:10px;height:10px;background:#16A34A;border-radius:2px;margin-right:4px"></span>Recebido</span></div></div><div style="overflow-x:auto"><svg width="${totalW}" height="${h+22}" xmlns="http://www.w3.org/2000/svg">${bars}</svg></div></div>`;
+}
+setTimeout(()=>{if(document.getElementById('dash-chart-wrap'))renderDashChart();},100);
 
 // ══ IMPORT / EXPORT ══
 
@@ -890,6 +991,14 @@ function renderEmprestimos(){
         <button class="btn btn-grn btn-sm" onclick="openEmpModal(null)">+ Novo Empréstimo</button>
       </div>
     </div>
+    <div class="filter-pills">
+      <button class="pill active" id="pill-todos" onclick="setEmpFilter('todos')">Todos</button>
+      <button class="pill pill-red" id="pill-atrasado" onclick="setEmpFilter('atrasado')">⚠ Em atraso</button>
+      <button class="pill pill-amb" id="pill-hoje" onclick="setEmpFilter('hoje')">🔴 Vence hoje</button>
+      <button class="pill pill-grn" id="pill-quitado" onclick="setEmpFilter('quitado')">✅ Quitados</button>
+      <button class="pill" id="pill-ativo" onclick="setEmpFilter('ativo')">📋 Ativos</button>
+      <button class="pill" id="pill-semparc" onclick="setEmpFilter('semparc')">💳 Sem parcelas</button>
+    </div>
     <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
       <input type="text" id="emp-s" placeholder="🔍  Buscar por nome, local ou responsável..." oninput="filterEmp()" style="max-width:380px"/>
       <button class="btn btn-d btn-sm" onclick="deleteSelectedEmps()" id="btn-del-all" style="display:none">Excluir selecionados</button>
@@ -907,12 +1016,24 @@ function renderEmprestimos(){
     </div>`;
 }
 
+let _empFilter='todos';
+function setEmpFilter(f){
+  _empFilter=f;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('pill-'+f);if(el)el.classList.add('active');
+  filterEmp();
+}
 function filterEmp(){
   const q=(document.getElementById('emp-s')?.value||'').toLowerCase();
-  const f=emprestimos.filter(e=>{
+  let f=emprestimos.filter(e=>{
     const tom=tomadores.find(t=>t.id===e.tomador_id);
     return(tom?.nome||'').toLowerCase().includes(q)||(e.responsavel||'').toLowerCase().includes(q)||(e.local||'').toLowerCase().includes(q);
   });
+  if(_empFilter==='atrasado'){f=f.filter(e=>parcelas.some(p=>p.emprestimo_id===e.id&&isAtrasada(p)));}
+  else if(_empFilter==='hoje'){f=f.filter(e=>parcelas.some(p=>p.emprestimo_id===e.id&&p.status==='pendente'&&p.vencimento===today()));}
+  else if(_empFilter==='quitado'){f=f.filter(e=>{const ep=parcelas.filter(p=>p.emprestimo_id===e.id);return ep.length>0&&ep.every(p=>p.status==='pago');});}
+  else if(_empFilter==='ativo'){f=f.filter(e=>{const ep=parcelas.filter(p=>p.emprestimo_id===e.id);return ep.length===0||ep.some(p=>p.status==='pendente');});}
+  else if(_empFilter==='semparc'){f=f.filter(e=>parcelas.filter(p=>p.emprestimo_id===e.id).length===0);}
   const tb=document.getElementById('emp-tbody');if(tb)tb.innerHTML=empTbodyHTML(f);
 }
 
@@ -1116,7 +1237,11 @@ function openClientView(tomId){
         <div style="font-family:var(--FT);font-size:1.3rem;color:var(--n1)">${tom.nome}</div>
         <div style="font-size:12px;color:var(--n4);margin-top:2px">${tom.contato?`${tom.contato} · `:''} ${empsDoTom.length} empréstimo${empsDoTom.length!==1?'s':''}</div>
       </div>
-      <button onclick="document.getElementById('client-view-modal').remove()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--n4)">✕</button>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        ${tom.contato?`<a href="https://wa.me/55${tom.contato.replace(/\D/g,'')}" target="_blank" class="btn btn-sm" style="background:#16A34A;color:#fff;font-size:12px;padding:.3rem .7rem;text-decoration:none">💬 WhatsApp</a>`:''}
+        <button class="btn btn-g btn-sm" style="font-size:12px" onclick="printFicha('${tom.id}')">🖨 Imprimir</button>
+        <button onclick="document.getElementById('client-view-modal').remove()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--n4)">✕</button>
+      </div>
     </div>
     <div style="padding:1.25rem 1.5rem">
       <!-- CARDS RESUMO -->
@@ -1266,10 +1391,23 @@ function openParcelas(empId){
       </div>`;
     }).join('')}</div>`;
 
+  // Histórico de abatimentos
+  const abats=parcsEmp.filter(p=>p.status==='pago'&&p.abatimento>0);
+  if(abats.length){
+    const totalAbat=abats.reduce((s,p)=>s+Number(p.abatimento||0),0);
+    const histHTML=abats.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:.35rem 0;border-bottom:1px solid #F3F4F6"><span style="color:var(--n3)">${p.numero}ª parcela · ${fmtDate(p.pago_em)}</span><span style="font-weight:700;color:var(--blu)">-${fmtR(p.abatimento)}</span></div>`).join('');
+    const abatDiv=document.createElement('div');
+    abatDiv.style.cssText='padding:.75rem;background:#EFF6FF;border-radius:var(--rs);margin-top:.75rem;border:1px solid #BFDBFE';
+    abatDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--blu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Histórico de Abatimentos</div>${histHTML}<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #BFDBFE"><span>Total abatido</span><span style="color:var(--blu)">${fmtR(totalAbat)}</span></div>`;
+    document.getElementById('parc-modal-body').appendChild(abatDiv);
+  }
+
+  const tom2=tomadores.find(t=>t.id===emp?.tomador_id);
   const footer=document.getElementById('parc-modal').querySelector('.mfooter');
   footer.innerHTML=`
     <button class="btn btn-g btn-sm" onclick="closeM('parc-modal')">Fechar</button>
-    <button class="btn btn-p btn-sm" onclick="addParcela('${empId}')">+ Adicionar Parcela</button>`;
+    ${tom2?.contato?`<a href="https://wa.me/55${(tom2.contato).replace(/\D/g,'')}" target="_blank" class="btn btn-sm" style="background:#16A34A;color:#fff;text-decoration:none;font-size:13px">💬 WhatsApp</a>`:''}
+    <button class="btn btn-p btn-sm" onclick="addParcela('${empId}')">+ Parcela</button>`;
   openM('parc-modal');
   // Scroll to bottom so latest parcelas are visible
   setTimeout(()=>{
@@ -1443,7 +1581,7 @@ function renderTomadores(){
     <div style="margin-bottom:1rem"><input type="text" id="tom-s" placeholder="🔍  Buscar tomador..." oninput="filterTom()" style="max-width:360px"/></div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>Nº</th><th>Nome</th><th>Contato</th><th>Local</th><th>Garantia</th><th>Empréstimos</th><th>Total Devido</th><th></th></tr></thead>
+        <thead><tr><th>Nº</th><th>Nome</th><th>Contato</th><th>Ocupação</th><th>Empréstimos</th><th>Total Devido</th><th></th></tr></thead>
         <tbody id="tom-tbody">${tomTbodyHTML(tomadores)}</tbody>
       </table>
     </div>`;
@@ -1464,9 +1602,8 @@ function tomTbodyHTML(list){
     return`<tr>
       <td style="color:var(--n4);font-size:12px">${i+1}</td>
       <td style="font-weight:600">${t.nome}</td>
-      <td style="color:var(--n3)">${t.contato||'—'}</td>
-      <td style="color:var(--n3)">${t.local||'—'}</td>
-      <td style="color:var(--n3)">${t.garantia||'—'}</td>
+      <td style="color:var(--n3)">${t.contato?`<a href="https://wa.me/55${t.contato.replace(/\D/g,'')}" target="_blank" style="color:var(--grn);text-decoration:none">${t.contato}</a>`:'—'}</td>
+      <td style="color:var(--n3)">${t.ocupacao||'—'}</td>
       <td style="font-weight:600;color:var(--blu)">${emps.length}</td>
       <td style="font-weight:700;color:${devido>0?'var(--amb)':'var(--grn)'}">${fmtR(devido)}</td>
       <td><div style="display:flex;gap:.3rem">
@@ -1482,8 +1619,7 @@ function openTomModal(id){
   document.getElementById('tom-modal-title').textContent=editTom?'Editar Tomador':'Novo Tomador';
   document.getElementById('tom-nome').value=editTom?.nome||'';
   document.getElementById('tom-cont').value=editTom?.contato||'';
-  const locEl=document.getElementById('tom-loc');if(locEl)locEl.value=editTom?.local||'';
-  const garEl=document.getElementById('tom-gar');if(garEl)garEl.value=editTom?.garantia||'';
+  const ocupEl=document.getElementById('tom-ocup');if(ocupEl)ocupEl.value=editTom?.ocupacao||'';
   const modal=document.getElementById('tom-modal');
   modal.style.display='flex';
   modal.style.zIndex='400';
@@ -1493,7 +1629,8 @@ function openTomModal(id){
 async function saveTom(){
   const nome=document.getElementById('tom-nome').value.trim();
   if(!nome){toast('⚠ Informe o nome',true);return;}
-  const payload={nome,contato:document.getElementById('tom-cont').value.trim()||null,owner_id:session.id};
+  const ocupEl=document.getElementById('tom-ocup');
+  const payload={nome,contato:document.getElementById('tom-cont').value.trim()||null,ocupacao:ocupEl?.value.trim()||null,owner_id:session.id};
   if(editTom){
     const{data,error}=await sb.from('tomadores').update(payload).eq('id',editTom.id).select().single();
     if(error){toast('Erro ao salvar',true);return;}
@@ -1855,8 +1992,152 @@ async function deleteUsr(id){
   users=users.filter(x=>x.id!==id);toast('Usuário removido');renderUsuarios();
 }
 
+
+// ══ RELATÓRIO ══
+function renderRelatorio(){
+  const mc=document.getElementById('main-content');
+  const ops=users.filter(u=>u.role!=='admin');
+  const allUsers=session.role==='admin'?users:[session];
+
+  const rows=allUsers.map(u=>{
+    const emps=emprestimos.filter(e=>e.owner_id===u.id);
+    const parcsU=parcelas.filter(p=>emps.some(e=>e.id===p.emprestimo_id));
+    const totalEmp=emps.reduce((s,e)=>s+Number(e.valor||0),0);
+    const totalRec=parcsU.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor_pago||p.valor||0),0);
+    const totalPend=parcsU.filter(p=>p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);
+    const atras=parcsU.filter(p=>isAtrasada(p)).length;
+    const av=u.role==='admin'?'background:#FDE68A;color:#78350F':'background:#FFF7ED;color:#EA580C';
+    return`<div style="background:var(--card);border:1px solid #E5E7EB;border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh)">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+        <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;${av}">${ini(u.nome)}</div>
+        <div>
+          <div style="font-weight:700;font-size:15px">${u.nome}</div>
+          <div style="font-size:12px;color:var(--n4)">@${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'3°JOB'}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem">
+        <div style="text-align:center;background:var(--blu0);border-radius:var(--rs);padding:.75rem">
+          <div style="font-size:9px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:3px">Emprestado</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:var(--blu)">${fmtR(totalEmp)}</div>
+          <div style="font-size:10px;color:var(--n4);margin-top:2px">${emps.length} empréstimo${emps.length!==1?'s':''}</div>
+        </div>
+        <div style="text-align:center;background:var(--grn0);border-radius:var(--rs);padding:.75rem">
+          <div style="font-size:9px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Recebido</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:var(--grn)">${fmtR(totalRec)}</div>
+        </div>
+        <div style="text-align:center;background:#F9FAFB;border-radius:var(--rs);padding:.75rem">
+          <div style="font-size:9px;color:var(--n4);font-weight:700;text-transform:uppercase;margin-bottom:3px">Pendente</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:var(--amb)">${fmtR(totalPend)}</div>
+        </div>
+        <div style="text-align:center;background:${atras?'var(--red0)':'#F9FAFB'};border-radius:var(--rs);padding:.75rem">
+          <div style="font-size:9px;color:${atras?'var(--red)':'var(--n4)'};font-weight:700;text-transform:uppercase;margin-bottom:3px">Em atraso</div>
+          <div style="font-family:var(--FT);font-size:1.1rem;color:${atras?'var(--red)':'var(--n4)'}">${atras}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  mc.innerHTML=`<div class="sec-hdr"><span class="sec-title">Relatório por Operador</span></div>${rows||'<div class="empty"><div class="empty-text">Nenhum dado.</div></div>'}`;
+}
+
+// ══ DARK MODE ══
+function toggleDarkMode(){
+  const dark=document.body.classList.toggle('dark');
+  try{localStorage.setItem('ep_dark',dark?'1':'0');}catch(e){}
+  updateDarkBtn();
+}
+function updateDarkBtn(){
+  const btn=document.getElementById('dark-toggle');
+  if(!btn)return;
+  const isDark=document.body.classList.contains('dark');
+  btn.innerHTML=isDark
+    ?'<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+    :'<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  btn.title=isDark?'Modo claro':'Modo escuro';
+}
+function loadDarkMode(){
+  try{if(localStorage.getItem('ep_dark')==='1'){document.body.classList.add('dark');}}catch(e){}
+  updateDarkBtn();
+}
+
+// ══ BUSCA GLOBAL ══
+function openGlobalSearch(){
+  const ov=document.getElementById('gsearch-ov');
+  ov.classList.add('open');
+  setTimeout(()=>document.getElementById('gsearch-input')?.focus(),100);
+}
+function closeGlobalSearch(){
+  document.getElementById('gsearch-ov').classList.remove('open');
+  document.getElementById('gsearch-input').value='';
+  document.getElementById('gsearch-results').innerHTML='<div class="gsearch-empty">Digite para buscar...</div>';
+}
+function runGlobalSearch(){
+  const q=(document.getElementById('gsearch-input').value||'').toLowerCase().trim();
+  const res=document.getElementById('gsearch-results');
+  if(q.length<2){res.innerHTML='<div class="gsearch-empty">Digite ao menos 2 caracteres...</div>';return;}
+  const items=[];
+  tomadores.filter(t=>t.nome.toLowerCase().includes(q)||(t.contato||'').includes(q)||(t.ocupacao||'').toLowerCase().includes(q)).forEach(t=>{
+    const emps=emprestimos.filter(e=>e.tomador_id===t.id).length;
+    items.push(`<div class="gsearch-item" onclick="closeGlobalSearch();setTimeout(()=>openClientView('${t.id}'),100)">
+      <div><div style="font-weight:600;font-size:13px">${t.nome}</div><div style="font-size:11px;color:var(--n4)">${t.contato||''} · ${emps} empréstimo${emps!==1?'s':''}</div></div>
+      <span class="gsearch-tag" style="background:#EFF6FF;color:var(--blu)">Tomador</span></div>`);
+  });
+  emprestimos.filter(e=>{const t=tomadores.find(x=>x.id===e.tomador_id);return(t?.nome||'').toLowerCase().includes(q)||(e.responsavel||'').toLowerCase().includes(q)||(e.local||'').toLowerCase().includes(q)||String(e.valor).includes(q);}).forEach(e=>{
+    const t=tomadores.find(x=>x.id===e.tomador_id);
+    items.push(`<div class="gsearch-item" onclick="closeGlobalSearch();setTimeout(()=>openParcelas('${e.id}'),100)">
+      <div><div style="font-weight:600;font-size:13px">${t?.nome||'—'}</div><div style="font-size:11px;color:var(--n4)">${fmtR(e.valor)} · ${(e.juros*100).toFixed(0)}% · ${fmtDate(e.data_emprestimo)}</div></div>
+      <span class="gsearch-tag" style="background:var(--grn0);color:var(--grn)">Empréstimo</span></div>`);
+  });
+  res.innerHTML=items.length?items.join(''):'<div class="gsearch-empty">Nenhum resultado para "'+q+'"</div>';
+}
+
+// ══ IMPRIMIR FICHA ══
+function printFicha(tomId){
+  const tom=tomadores.find(t=>t.id===tomId);
+  if(!tom)return;
+  const emps=emprestimos.filter(e=>e.tomador_id===tomId);
+  const todasP=parcelas.filter(p=>emps.some(e=>e.id===p.emprestimo_id));
+  const pagas=todasP.filter(p=>p.status==='pago').length;
+  const totalEmp=emps.reduce((s,e)=>s+Number(e.valor||0),0);
+  const totalRec=todasP.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor_pago||p.valor||0),0);
+  const saldoDevedor=emps.reduce((s,e)=>s+Number(e.saldo_devedor!=null?e.saldo_devedor:e.valor||0),0);
+
+  const empRows=emps.map(e=>{
+    const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id).sort((a,b)=>a.numero-b.numero);
+    const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
+    return`<tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 8px">${fmtDate(e.data_emprestimo)}</td>
+      <td style="padding:6px 8px">${fmtR(e.valor)}</td>
+      <td style="padding:6px 8px">${(e.juros*100).toFixed(1)}%</td>
+      <td style="padding:6px 8px">${fmtR(e.valor*e.juros)}/mês</td>
+      <td style="padding:6px 8px">${e.garantia||'—'}</td>
+      <td style="padding:6px 8px">${pgCnt}/${parcsEmp.length} pagas</td>
+    </tr>`;
+  }).join('');
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha — ${tom.nome}</title>
+  <style>body{font-family:Arial,sans-serif;padding:2rem;color:#111;max-width:800px;margin:0 auto}h1{font-size:1.5rem;margin-bottom:.25rem}h2{font-size:1rem;color:#666;font-weight:400;margin:0 0 1.5rem}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f3f4f6;padding:6px 8px;text-align:left;border-bottom:2px solid #ddd}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}.stat{border:1px solid #ddd;border-radius:8px;padding:.75rem;text-align:center}.stat-label{font-size:10px;text-transform:uppercase;color:#666;margin-bottom:4px}.stat-val{font-size:1.2rem;font-weight:700}.footer{margin-top:2rem;font-size:11px;color:#999;text-align:right}@media print{button{display:none}}</style>
+  </head><body>
+  <h1>${tom.nome}</h1>
+  <h2>${tom.contato||''} ${tom.ocupacao?'· '+tom.ocupacao:''} · Impresso em ${new Date().toLocaleDateString('pt-BR')}</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-val" style="color:#2563EB">${fmtR(totalEmp)}</div></div>
+    <div class="stat"><div class="stat-label">Recebido</div><div class="stat-val" style="color:#16A34A">${fmtR(totalRec)}</div></div>
+    <div class="stat"><div class="stat-label">Saldo Devedor</div><div class="stat-val" style="color:#DC2626">${fmtR(saldoDevedor)}</div></div>
+    <div class="stat"><div class="stat-label">Parcelas Pagas</div><div class="stat-val">${pagas}/${todasP.length}</div></div>
+  </div>
+  <table><thead><tr><th>Data</th><th>Valor</th><th>Juros</th><th>Parcela</th><th>Garantia</th><th>Situação</th></tr></thead>
+  <tbody>${empRows}</tbody></table>
+  <div class="footer">AGPainel · ${session?.nome||''}</div>
+  <br><button onclick="window.print()" style="padding:.5rem 1.5rem;background:#EA580C;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨 Imprimir</button>
+  </body></html>`);
+  win.document.close();
+}
+
 // ══ INIT ══
 window.addEventListener('DOMContentLoaded',async()=>{
+  loadDarkMode();
   loadSavedCreds();
   session=readSession();
   if(session){
