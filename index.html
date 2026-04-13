@@ -336,18 +336,21 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
 
     <!-- BLOCO NOTIFICAÇÃO DO NAVEGADOR -->
     <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:var(--rs);padding:1rem;margin-bottom:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
         <div>
           <div style="font-weight:700;font-size:13px">🔔 Alertas no dispositivo</div>
           <div style="font-size:11px;color:var(--n4);margin-top:2px">Notificação na tela + vibração no celular</div>
         </div>
-        <span id="notif-status-badge" style="font-size:11px;padding:2px 10px;border-radius:999px;font-weight:700;background:#F3F4F6;color:var(--n4)">Desativado</span>
+        <!-- Toggle ativar/desativar -->
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+          <div id="notif-toggle-track" onclick="toggleNotificacoes()" style="width:44px;height:24px;border-radius:999px;background:#D1D5DB;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
+            <div id="notif-toggle-knob" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+          </div>
+          <span id="notif-toggle-label" style="font-size:13px;font-weight:600;color:var(--n4)">Desativado</span>
+        </label>
       </div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn btn-sm" id="btn-ativar-notif" style="background:#EA580C;color:#fff" onclick="ativarNotificacoes()">Ativar alertas</button>
-        <button class="btn btn-g btn-sm" onclick="testarNotificacao()">🔔 Testar agora</button>
-      </div>
-      <div id="notif-msg" style="font-size:11px;color:var(--n4);margin-top:.5rem"></div>
+      <div id="notif-perm-msg" style="font-size:11px;color:var(--n4);margin-bottom:.6rem;display:none"></div>
+      <button class="btn btn-g btn-sm" id="btn-testar-notif" onclick="testarNotificacao()" style="display:none">🔔 Testar agora</button>
     </div>
 
     <!-- BLOCO WHATSAPP -->
@@ -668,7 +671,7 @@ async function bootApp(){
   }catch(e){}
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
   buildSidebar();showPage('dashboard');
-  if(Notification.permission==='granted')iniciarVerificacaoAutomatica();
+  if(_notifAtivo())iniciarVerificacaoAutomatica();
 }
 
 function doLogout(){
@@ -2290,48 +2293,75 @@ async function deleteUsr(id){
 // ══ NOTIFICAÇÕES DO NAVEGADOR ══
 let _notifInterval = null;
 
+function _notifAtivo(){
+  // Ativo = permissão concedida E não foi desativado manualmente
+  return Notification.permission==='granted' && localStorage.getItem('ep_notif_off')!=='1';
+}
+
 function atualizarBadgeNotif(){
-  const badge = document.getElementById('notif-status-badge');
-  const btn   = document.getElementById('btn-ativar-notif');
-  const msg   = document.getElementById('notif-msg');
-  if(!badge) return;
+  const track = document.getElementById('notif-toggle-track');
+  const knob  = document.getElementById('notif-toggle-knob');
+  const label = document.getElementById('notif-toggle-label');
+  const pmsg  = document.getElementById('notif-perm-msg');
+  const tbtn  = document.getElementById('btn-testar-notif');
+  if(!track) return;
 
-  const perm = Notification.permission;
-  if(perm === 'granted'){
-    badge.textContent = 'Ativo';
-    badge.style.background = '#DCFCE7'; badge.style.color = '#166534';
-    if(btn){ btn.textContent = '✓ Ativado'; btn.style.background = '#16A34A'; }
-    if(msg) msg.textContent = 'Você receberá alertas automáticos a cada 30 minutos.';
-  } else if(perm === 'denied'){
-    badge.textContent = 'Bloqueado';
-    badge.style.background = '#FEE2E2'; badge.style.color = '#991B1B';
-    if(btn){ btn.textContent = 'Desbloqueie nas configurações do navegador'; btn.style.background = '#6B7280'; }
-    if(msg) msg.textContent = 'Permissão negada. Clique no cadeado na barra de endereço para permitir.';
+  const perm    = Notification.permission;
+  const ativo   = _notifAtivo();
+  const bloq    = perm==='denied';
+
+  if(ativo){
+    track.style.background='#16A34A';
+    knob.style.left='22px';
+    label.textContent='Ativo'; label.style.color='#166534';
+    if(pmsg){pmsg.style.display='block';pmsg.textContent='Alertas automáticos a cada 30 min.';}
+    if(tbtn) tbtn.style.display='';
+  } else if(bloq){
+    track.style.background='#D1D5DB';
+    knob.style.left='2px';
+    label.textContent='Bloqueado pelo navegador'; label.style.color='#DC2626';
+    if(pmsg){pmsg.style.display='block';pmsg.style.color='#DC2626';pmsg.textContent='Clique no cadeado na barra de endereço para permitir notificações.';}
+    if(tbtn) tbtn.style.display='none';
   } else {
-    badge.textContent = 'Desativado';
-    badge.style.background = '#F3F4F6'; badge.style.color = '#6B7280';
-    if(btn){ btn.textContent = 'Ativar alertas'; btn.style.background = '#EA580C'; }
-    if(msg) msg.textContent = '';
+    track.style.background='#D1D5DB';
+    knob.style.left='2px';
+    label.textContent='Desativado'; label.style.color='var(--n4)';
+    if(pmsg){pmsg.style.display='none';pmsg.textContent='';}
+    if(tbtn) tbtn.style.display='none';
   }
 }
 
-async function ativarNotificacoes(){
-  if(!('Notification' in window)){
-    toast('⚠ Seu navegador não suporta notificações',true); return;
-  }
-  const perm = await Notification.requestPermission();
-  atualizarBadgeNotif();
-  if(perm === 'granted'){
-    toast('✓ Alertas ativados!');
-    iniciarVerificacaoAutomatica();
-    testarNotificacao();
+async function toggleNotificacoes(){
+  if(!('Notification' in window)){toast('⚠ Seu navegador não suporta notificações',true);return;}
+
+  if(_notifAtivo()){
+    // Desativar
+    localStorage.setItem('ep_notif_off','1');
+    if(_notifInterval){clearInterval(_notifInterval);_notifInterval=null;}
+    atualizarBadgeNotif();
+    toast('Alertas desativados');
+  } else if(Notification.permission==='denied'){
+    toast('⚠ Permissão bloqueada. Libere nas configurações do navegador.',true);
   } else {
-    toast('⚠ Permissão negada. Habilite nas configurações do navegador.',true);
+    // Ativar — solicita permissão se ainda não concedida
+    const perm = Notification.permission==='granted'?'granted':await Notification.requestPermission();
+    if(perm==='granted'){
+      localStorage.removeItem('ep_notif_off');
+      atualizarBadgeNotif();
+      iniciarVerificacaoAutomatica();
+      toast('✓ Alertas ativados!');
+    } else {
+      toast('⚠ Permissão negada.',true);
+      atualizarBadgeNotif();
+    }
   }
 }
+
+// Mantém compatibilidade com chamadas antigas
+async function ativarNotificacoes(){ await toggleNotificacoes(); }
 
 function dispararNotificacao(titulo, corpo, tag){
-  if(Notification.permission!=='granted')return;
+  if(!_notifAtivo())return;
   if(navigator.vibrate)navigator.vibrate([300,100,300,100,500]);
   const icon="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>";
   const n=new Notification(titulo,{body:corpo,icon,tag:tag||'agpainel',renotify:true});
