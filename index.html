@@ -1495,8 +1495,7 @@ function openParcelas(empId){
   const tom2=tomadores.find(t=>t.id===emp?.tomador_id);
   const footer=document.getElementById('parc-modal').querySelector('.mfooter');
   footer.innerHTML=`
-    <button class="btn btn-g btn-sm" onclick="closeM('parc-modal')">Fechar</button>
-    ${tom2?.contato?`<a href="https://wa.me/55${(tom2.contato).replace(/\D/g,'')}" target="_blank" class="btn btn-sm" style="background:#16A34A;color:#fff;text-decoration:none;font-size:13px">💬 WhatsApp</a>`:''}
+    <button class="btn btn-g btn-sm" onclick="closeM('parc-modal');openClientView('${tom2?.id}')">← Voltar</button>
     <button class="btn btn-p btn-sm" onclick="addParcela('${empId}')">+ Parcela</button>`;
   openM('parc-modal');
   // Scroll to bottom so latest parcelas are visible
@@ -1622,9 +1621,58 @@ async function efetivarPagamento(id, empId, jurosParc, saldoAtual){
     toast('✓ Pagamento de juros confirmado!');
   }
 
+  // Gera próxima parcela automaticamente se não há mais pendentes e saldo > 0
+  await autoGerarProximaParcela(empId, novoSaldo);
+
   openParcelas(empId);
   if(curPage==='dashboard')renderDashboard();
   else if(curPage==='emprestimos')renderEmprestimos();
+}
+
+async function autoGerarProximaParcela(empId, saldoOverride){
+  const emp=emprestimos.find(e=>e.id===empId);
+  if(!emp)return;
+
+  // Saldo atual do empréstimo
+  const saldo=saldoOverride!=null?saldoOverride:parseFloat((emp.saldo_devedor!=null?emp.saldo_devedor:emp.valor).toFixed(2));
+
+  // Não gera se o capital já foi quitado
+  if(saldo<=0)return;
+
+  // Verifica se ainda existe alguma parcela pendente
+  const parcsEmp=parcelas.filter(p=>p.emprestimo_id===empId);
+  const temPendente=parcsEmp.some(p=>p.status==='pendente');
+  if(temPendente)return;
+
+  // Calcula a data da próxima parcela (último vencimento + 1 mês)
+  const parcsOrdenadas=parcsEmp.sort((a,b)=>b.numero-a.numero);
+  const ultimaParc=parcsOrdenadas[0];
+  let novaData;
+  if(ultimaParc){
+    const dt=new Date(ultimaParc.vencimento+'T12:00:00');
+    dt.setMonth(dt.getMonth()+1);
+    novaData=dt.toISOString().split('T')[0];
+  } else {
+    // Sem parcelas anteriores: usa data do empréstimo + 1 mês
+    const dt=new Date(emp.data_emprestimo+'T12:00:00');
+    dt.setMonth(dt.getMonth()+1);
+    novaData=dt.toISOString().split('T')[0];
+  }
+
+  const proximoNum=(ultimaParc?.numero||0)+1;
+  const valorParc=parseFloat((emp.valor*emp.juros).toFixed(2));
+
+  const{data:nova,error}=await sb.from('parcelas').insert({
+    emprestimo_id:empId,
+    numero:proximoNum,
+    vencimento:novaData,
+    valor:valorParc,
+    status:'pendente'
+  }).select().single();
+
+  if(error){console.error('Erro ao gerar próxima parcela',error);return;}
+  parcelas.push(nova);
+  toast(`✓ Próxima parcela gerada automaticamente: ${fmtDate(novaData)}`);
 }
 
 async function marcarPago(id){
@@ -1632,6 +1680,10 @@ async function marcarPago(id){
   if(error){toast('Erro ao atualizar',true);return;}
   parcelas=parcelas.map(p=>p.id===id?data:p);
   toast('✓ Parcela marcada como paga!');
+
+  // Gera próxima parcela automaticamente se necessário
+  await autoGerarProximaParcela(data.emprestimo_id);
+
   const modal=document.getElementById('parc-modal');
   if(modal.style.display!=='none'){
     const emp=emprestimos.find(e=>e.id===data.emprestimo_id);
