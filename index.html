@@ -2159,20 +2159,11 @@ function enviarAvisosWa(){
 
   if(!linhas3.length&&!linhas7.length){toast('✓ Nenhuma parcela vencendo nos próximos 7 dias!');return;}
 
-  let msg='📊 *AGPainel — Avisos de Cobranças*
-';
-  msg+=`🗓 ${new Date().toLocaleDateString('pt-BR')}
-
-`;
-  if(linhas3.length){msg+=`🔴 *Vencem em até 3 dias (${linhas3.length}):*
-${linhas3.join('
-')}
-
-`;}
-  if(linhas7.length){msg+=`⏰ *Vencem em 4–7 dias (${linhas7.length}):*
-${linhas7.join('
-')}
-`;}
+  const nl='\n';
+  let msg='📊 *AGPainel — Avisos de Cobranças*'+nl;
+  msg+='🗓 '+new Date().toLocaleDateString('pt-BR')+nl+nl;
+  if(linhas3.length){msg+='🔴 *Vencem em até 3 dias ('+linhas3.length+'):*'+nl+linhas3.join(nl)+nl+nl;}
+  if(linhas7.length){msg+='⏰ *Vencem em 4–7 dias ('+linhas7.length+'):*'+nl+linhas7.join(nl)+nl;}
 
   const tel=num.replace(/\D/g,'');
   const url=`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
