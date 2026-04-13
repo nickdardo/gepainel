@@ -1121,7 +1121,15 @@ function exportExcel(){
   const ws=XLSX.utils.aoa_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'BANCO DE DADOS',ws);
-  XLSX.writeFile(wb,`AGPainel_${today()}.xlsx`);
+  const b64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+  const bin=atob(b64);const buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download='AGPainel_'+today()+'.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},300);
   toast('✓ Arquivo exportado!');
 }
 
@@ -1983,14 +1991,27 @@ function exportTomadoresExcel(){
     const emps=emprestimos.filter(e=>e.tomador_id===t.id);
     const totalEmp=emps.reduce((s,e)=>s+Number(e.valor||0),0);
     const saldo=emps.reduce((s,e)=>s+Number(e.saldo_devedor!=null?e.saldo_devedor:e.valor||0),0);
-    rows.push([i+1, t.nome, t.contato||'', t.ocupacao||'', emps.length, totalEmp, saldo]);
+    rows.push([i+1,t.nome,t.contato||'',t.ocupacao||'',emps.length,totalEmp,saldo]);
   });
 
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:4},{wch:32},{wch:18},{wch:20},{wch:14},{wch:18},{wch:18}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Tomadores',ws);
-  XLSX.writeFile(wb,'AGPainel_Tomadores_'+today()+'.xlsx');
+
+  // Gera base64 e faz download via link — funciona em todos os browsers
+  const b64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});
+  const bin=atob(b64);
+  const buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='AGPainel_Tomadores_'+today()+'.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},300);
   toast('✓ Dados exportados!');
 }
 
