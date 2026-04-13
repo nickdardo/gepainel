@@ -128,6 +128,9 @@ select option{background:#fff;color:var(--n1)}
 .bdg-cancel{background:var(--red0);color:var(--red)}
 .bdg-admin{background:#EDE9FE;color:#5B21B6}
 .bdg-op{background:#FFF7ED;color:#EA580C}
+.bdg-juros{background:#FFF7ED;color:#EA580C}
+.bdg-consig{background:#EFF6FF;color:#2563EB}
+
 .bdg-atras{background:var(--red0);color:var(--red)}
 
 /* TABLE */
@@ -431,6 +434,23 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
   <div class="modal" style="max-width:540px">
     <div class="mhdr"><span class="mtitle" id="emp-modal-title">Novo Empréstimo</span><button class="mclose" onclick="closeM('emp-modal')">✕</button></div>
     <div class="mbody">
+
+      <!-- SELETOR DE TIPO -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem">
+        <button type="button" id="btn-tipo-juros" onclick="setTipoEmp('juros')"
+          style="padding:.6rem;border-radius:var(--rs);font-family:var(--FB);font-size:13px;font-weight:600;cursor:pointer;border:2px solid #EA580C;background:#EA580C;color:#fff;transition:all .15s">
+          💰 Juros Mensal
+        </button>
+        <button type="button" id="btn-tipo-consig" onclick="setTipoEmp('consignado')"
+          style="padding:.6rem;border-radius:var(--rs);font-family:var(--FB);font-size:13px;font-weight:600;cursor:pointer;border:2px solid #E5E7EB;background:#fff;color:#6B7280;transition:all .15s">
+          📋 Consignado
+        </button>
+      </div>
+      <!-- Descrição do tipo -->
+      <div id="emp-tipo-desc" style="font-size:12px;color:#9A3412;background:#FFF7ED;border-radius:var(--rs);padding:.5rem .85rem;margin-bottom:1rem;border:1px solid #FED7AA">
+        Parcela mensal = só juros. Capital reduz com abatimentos. Gera juros diários após vencimento.
+      </div>
+
       <div class="fgrid">
         <div class="fg full">
           <span class="lbl">Tomador *</span>
@@ -446,30 +466,36 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
 
         <div class="msec full" style="border-top:none;padding-top:0">Valores</div>
         <div class="fg"><span class="lbl">Valor Emprestado (R$) *</span><input type="text" id="emp-valor" placeholder="Ex: 1.000,00" oninput="maskCurrency(this);updateEmpCalc()" inputmode="numeric"/></div>
-        <div class="fg"><span class="lbl">Juros (%) *</span>
+        <div class="fg" id="emp-juros-wrap"><span class="lbl">Juros (%) *</span>
           <select id="emp-juros" onchange="updateEmpCalc()">
-            <option value="0.05">5%</option>
-            <option value="0.075">7,5%</option>
-            <option value="0.1">10%</option>
-            <option value="0.15">15%</option>
-            <option value="0.2">20%</option>
-            <option value="0.25">25%</option>
-            <option value="0.3">30%</option>
-            <option value="0.4">40%</option>
+            <option value="0.05">5%</option><option value="0.075">7,5%</option>
+            <option value="0.1">10%</option><option value="0.15">15%</option>
+            <option value="0.2">20%</option><option value="0.25">25%</option>
+            <option value="0.3">30%</option><option value="0.4">40%</option>
             <option value="0.5">50%</option>
           </select>
         </div>
+
+        <!-- CAMPO CONSIGNADO: valor total a receber -->
+        <div class="fg full" id="emp-consig-wrap" style="display:none">
+          <span class="lbl">Valor Total a Receber (R$) *</span>
+          <input type="text" id="emp-valor-consig" placeholder="Ex: 8.000,00 (o que o cliente vai pagar no total)" oninput="maskCurrency(this);updateEmpCalc()" inputmode="numeric"/>
+          <div style="font-size:11px;color:var(--n4);margin-top:3px">O cliente pagará este valor parcelado. Inclui capital + juros.</div>
+        </div>
       </div>
+
       <!-- CÁLCULO AUTOMÁTICO -->
       <div id="emp-calc" style="display:none;margin-top:.75rem;background:#FFF7ED;border-radius:var(--rs);padding:1rem;border:1px solid #FED7AA">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;text-align:center">
-          <div><div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Total a receber</div><div style="font-family:var(--FT);font-size:1.3rem;color:#065F46" id="calc-total">R$ 0,00</div></div>
-          <div><div style="font-size:10px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:3px">Juros</div><div style="font-family:var(--FT);font-size:1.3rem;color:var(--blu)" id="calc-parc">R$ 0,00</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;text-align:center" id="emp-calc-grid">
+          <div><div style="font-size:10px;color:var(--grn);font-weight:700;text-transform:uppercase;margin-bottom:3px">Total a receber</div><div style="font-family:var(--FT);font-size:1.2rem;color:#065F46" id="calc-total">R$ 0,00</div></div>
+          <div><div style="font-size:10px;color:var(--blu);font-weight:700;text-transform:uppercase;margin-bottom:3px">Juros/mês</div><div style="font-family:var(--FT);font-size:1.2rem;color:var(--blu)" id="calc-parc">R$ 0,00</div></div>
+          <div id="calc-parc-consig-wrap" style="display:none"><div style="font-size:10px;color:var(--amb);font-weight:700;text-transform:uppercase;margin-bottom:3px">Parcela</div><div style="font-family:var(--FT);font-size:1.2rem;color:var(--amb)" id="calc-parc-consig">R$ 0,00</div></div>
         </div>
       </div>
 
       <div class="fgrid" style="margin-top:.75rem">
-        <div class="fg"><span class="lbl">Nº de Parcelas <span style="font-weight:400;font-size:10px;color:var(--n4);text-transform:none;letter-spacing:0">(conforme negociado)</span></span>
+        <div class="fg" id="emp-nparc-wrap">
+          <span class="lbl" id="emp-nparc-lbl">Nº de Parcelas</span>
           <select id="emp-nparc" onchange="updateEmpCalc()">
             <option value="0">Ilimitado</option>
             <option value="1">1 parcela</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option>
@@ -477,6 +503,7 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
             <option value="7">7 parcelas</option><option value="8">8 parcelas</option><option value="9">9 parcelas</option>
             <option value="10">10 parcelas</option><option value="12">12 parcelas</option>
             <option value="15">15 parcelas</option><option value="18">18 parcelas</option><option value="20">20 parcelas</option>
+            <option value="24">24 parcelas</option><option value="30">30 parcelas</option><option value="36">36 parcelas</option>
           </select>
         </div>
         <div class="fg"><span class="lbl">Observação</span><input id="emp-obs" placeholder="Anotações..."/></div>
@@ -1346,28 +1373,79 @@ function empTbodyHTML(list){
   }).join('');
 }
 
+let _empTipo='juros';
+
+function setTipoEmp(tipo){
+  _empTipo=tipo;
+  const bjuros=document.getElementById('btn-tipo-juros');
+  const bconsig=document.getElementById('btn-tipo-consig');
+  const desc=document.getElementById('emp-tipo-desc');
+  const consigWrap=document.getElementById('emp-consig-wrap');
+  const jurosWrap=document.getElementById('emp-juros-wrap');
+  const nparclbl=document.getElementById('emp-nparc-lbl');
+  const nparc=document.getElementById('emp-nparc');
+
+  if(tipo==='juros'){
+    bjuros.style.background='#EA580C';bjuros.style.borderColor='#EA580C';bjuros.style.color='#fff';
+    bconsig.style.background='#fff';bconsig.style.borderColor='#E5E7EB';bconsig.style.color='#6B7280';
+    desc.textContent='Parcela mensal = só juros. Capital reduz com abatimentos. Gera juros diários após vencimento.';
+    desc.style.background='#FFF7ED';desc.style.borderColor='#FED7AA';desc.style.color='#9A3412';
+    if(consigWrap)consigWrap.style.display='none';
+    if(jurosWrap)jurosWrap.style.display='';
+    if(nparclbl)nparclbl.textContent='Nº de Parcelas';
+    if(nparc){nparc.options[0].text='Ilimitado';}
+  } else {
+    bjuros.style.background='#fff';bjuros.style.borderColor='#E5E7EB';bjuros.style.color='#6B7280';
+    bconsig.style.background='#2563EB';bconsig.style.borderColor='#2563EB';bconsig.style.color='#fff';
+    desc.textContent='Valor total fixo. Cliente paga parcelado. Pagamento antecipado com desconto negociável.';
+    desc.style.background='#EFF6FF';desc.style.borderColor='#BFDBFE';desc.style.color='#1e40af';
+    if(consigWrap)consigWrap.style.display='';
+    if(jurosWrap)jurosWrap.style.display='none';
+    if(nparclbl)nparclbl.textContent='Nº de Parcelas *';
+    if(nparc&&nparc.value==='0')nparc.value='10';
+  }
+  updateEmpCalc();
+}
+
 function updateEmpCalc(){
   const val=parseCurrency(document.getElementById('emp-valor')?.value)||0;
   const juros=parseFloat(document.getElementById('emp-juros')?.value)||0;
-  const nparc=parseInt(document.getElementById('emp-nparc')?.value)||1;
-  const lucro=val*juros;
-  const total=val+lucro;
+  const nparc=parseInt(document.getElementById('emp-nparc')?.value)||0;
   const box=document.getElementById('emp-calc');
-  if(val>0&&box){
-    box.style.display='block';
-    document.getElementById('calc-total').textContent=fmtR(total);
-    document.getElementById('calc-parc').textContent=fmtR(lucro); // lucro = valor x juros = juros mensal
-  } else if(box){box.style.display='none';}
+  const consigWrap3=document.getElementById('calc-parc-consig-wrap');
+
+  if(_empTipo==='consignado'){
+    const valConsig=parseCurrency(document.getElementById('emp-valor-consig')?.value)||0;
+    if(val>0&&valConsig>0&&box){
+      box.style.display='block';
+      const lucro=valConsig-val;
+      const parcVal=nparc>0?parseFloat((valConsig/nparc).toFixed(2)):0;
+      document.getElementById('calc-total').textContent=fmtR(valConsig);
+      document.getElementById('calc-parc').textContent=fmtR(lucro>0?lucro:0);
+      if(consigWrap3)consigWrap3.style.display=nparc>0?'':'none';
+      if(parcVal)document.getElementById('calc-parc-consig').textContent=fmtR(parcVal);
+    } else if(box){box.style.display='none';}
+  } else {
+    const lucro=val*juros;
+    const total=val+lucro;
+    if(val>0&&box){
+      box.style.display='block';
+      document.getElementById('calc-total').textContent=fmtR(total);
+      document.getElementById('calc-parc').textContent=fmtR(lucro);
+      if(consigWrap3)consigWrap3.style.display='none';
+    } else if(box){box.style.display='none';}
+  }
 }
 
 function openEmpModal(id){
   editEmp=id?emprestimos.find(e=>e.id===id):null;
   document.getElementById('emp-modal-title').textContent=editEmp?'Editar Empréstimo':'Novo Empréstimo';
-  // Populate tomador select
   const sel=document.getElementById('emp-tom');
   sel.innerHTML='<option value="">Selecione o tomador</option>'+
     tomadores.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
   if(editEmp){
+    const tipo=editEmp.tipo||'juros';
+    setTipoEmp(tipo);
     sel.value=editEmp.tomador_id||'';
     document.getElementById('emp-resp').value=editEmp.responsavel||'';
     document.getElementById('emp-gar').value=editEmp.garantia||'';
@@ -1376,8 +1454,16 @@ function openEmpModal(id){
     document.getElementById('emp-valor').value=editEmp.valor||'';
     document.getElementById('emp-juros').value=editEmp.juros||'0.2';
     document.getElementById('emp-obs').value=editEmp.obs||'';
-    document.getElementById('emp-nparc').value=parcelas.filter(p=>p.emprestimo_id===editEmp.id).length||1;
+    if(tipo==='consignado'){
+      const vconsig=document.getElementById('emp-valor-consig');
+      if(vconsig)vconsig.value=editEmp.valor_total_consignado||'';
+      const parcsCount=parcelas.filter(p=>p.emprestimo_id===editEmp.id).length;
+      document.getElementById('emp-nparc').value=parcsCount||10;
+    } else {
+      document.getElementById('emp-nparc').value=parcelas.filter(p=>p.emprestimo_id===editEmp.id).length||1;
+    }
   } else {
+    setTipoEmp('juros');
     sel.value='';
     document.getElementById('emp-resp').value='';
     document.getElementById('emp-gar').value='';
@@ -1388,6 +1474,8 @@ function openEmpModal(id){
     document.getElementById('emp-obs').value='';
     document.getElementById('emp-nparc').value='0';
     document.getElementById('emp-calc').style.display='none';
+    const vconsig=document.getElementById('emp-valor-consig');
+    if(vconsig)vconsig.value='';
   }
   updateEmpCalc();
   openM('emp-modal');
@@ -1396,12 +1484,25 @@ function openEmpModal(id){
 async function saveEmp(){
   const tomId=document.getElementById('emp-tom').value;
   const valor=parseCurrency(document.getElementById('emp-valor').value);
-  const juros=parseFloat(document.getElementById('emp-juros').value);
   const data=document.getElementById('emp-data').value;
   const nparc=parseInt(document.getElementById('emp-nparc').value)||0;
+  const tipo=_empTipo||'juros';
+
   if(!tomId){toast('⚠ Selecione o tomador',true);return;}
   if(!valor||valor<=0){toast('⚠ Informe o valor',true);return;}
   if(!data){toast('⚠ Informe a data',true);return;}
+
+  let juros=0, valorTotalConsig=null;
+
+  if(tipo==='consignado'){
+    valorTotalConsig=parseCurrency(document.getElementById('emp-valor-consig')?.value)||0;
+    if(!valorTotalConsig||valorTotalConsig<=valor){toast('⚠ Valor total a receber deve ser maior que o emprestado',true);return;}
+    if(!nparc||nparc<=0){toast('⚠ Informe o número de parcelas para consignado',true);return;}
+    juros=parseFloat(((valorTotalConsig-valor)/valor).toFixed(4));
+  } else {
+    juros=parseFloat(document.getElementById('emp-juros').value);
+  }
+
   const payload={
     tomador_id:tomId,
     responsavel:document.getElementById('emp-resp').value.trim()||null,
@@ -1409,11 +1510,14 @@ async function saveEmp(){
     local:document.getElementById('emp-loc').value.trim()||null,
     valor:parseFloat(valor.toFixed(2)),
     juros:parseFloat(juros.toFixed(4)),
+    tipo:tipo,
+    valor_total_consignado:valorTotalConsig,
     data_emprestimo:data,
     obs:document.getElementById('emp-obs').value.trim()||null,
     created_by:session.id,
     owner_id:session.id
   };
+
   const btn=document.querySelector('#emp-modal .btn-grn');btn.textContent='Salvando...';btn.disabled=true;
   try{
     if(editEmp){
@@ -1425,21 +1529,30 @@ async function saveEmp(){
       const{data:d,error}=await sb.from('emprestimos').insert(payload).select().single();
       if(error)throw error;
       emprestimos.unshift(d);
-      // Gerar parcelas
-      const valorTotal=parseFloat((valor+valor*juros).toFixed(2));
-      if(nparc>0){
-        // Cada parcela = apenas os juros mensais (valor * juros)
+
+      if(tipo==='consignado'){
+        // Parcelas fixas: valorTotal / nparc
+        const valorParc=parseFloat((valorTotalConsig/nparc).toFixed(2));
+        const dataBase=new Date(data+'T12:00:00');
+        const parcsPayload=Array.from({length:nparc},(_,i)=>{
+          const venc=new Date(dataBase.getTime()+(i+1)*30*24*60*60*1000);
+          return{emprestimo_id:d.id,numero:i+1,vencimento:venc.toISOString().split('T')[0],valor:valorParc,status:'pendente'};
+        });
+        const{data:ps,error:pe}=await sb.from('parcelas').insert(parcsPayload).select();
+        if(!pe&&ps)parcelas.push(...ps);
+        toast('✓ Consignado registrado! '+nparc+'× '+fmtR(valorParc));
+      } else if(nparc>0){
         const valorParc=parseFloat((valor*juros).toFixed(2));
         const dataBase=new Date(data+'T12:00:00');
         const parcsPayload=Array.from({length:nparc},(_,i)=>{
-          const venc=new Date(dataBase.getTime()+(i+1)*31*24*60*60*1000);
+          const venc=new Date(dataBase.getTime()+(i+1)*30*24*60*60*1000);
           return{emprestimo_id:d.id,numero:i+1,vencimento:venc.toISOString().split('T')[0],valor:valorParc,status:'pendente'};
         });
         const{data:ps,error:pe}=await sb.from('parcelas').insert(parcsPayload).select();
         if(!pe&&ps)parcelas.push(...ps);
         toast('✓ Empréstimo registrado! '+nparc+' parcela'+(nparc!==1?'s':'')+' gerada'+(nparc!==1?'s':'')+'.');
       } else {
-        toast('✓ Empréstimo registrado! Parcelas: ilimitado.');
+        toast('✓ Empréstimo registrado! Juros mensais ilimitados.');
       }
     }
     closeM('emp-modal');
@@ -1660,6 +1773,7 @@ function openParcelas(empId){
             ${p.numero}ª Parcela
             ${atras?`<span style="font-size:10px;font-weight:400;background:var(--red);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">${diasAtras}d atraso</span>`:''}
             ${vencHoje?`<span style="font-size:10px;font-weight:400;background:var(--amb);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">Vence hoje</span>`:''}
+            ${(emp?.tipo||'juros')==='juros'&&atras?(()=>{const mora=parseFloat((p.valor/30*diasAtras).toFixed(2));return`<span style="font-size:10px;font-weight:600;color:var(--red);margin-left:4px">+ ${fmtR(mora)} mora</span>`;})():''}
           </div>
           <div style="font-size:11px;color:var(--n4);margin-top:2px">
             Venc: <strong>${fmtDate(p.vencimento)}</strong>
@@ -1706,9 +1820,17 @@ function confirmarPagamento(id, empId){
   if(!p||!emp)return;
 
   // Juros da parcela = valor original do empréstimo * taxa (parcela representa só os juros)
-  const jurosParc=parseFloat((emp.valor*emp.juros).toFixed(2));
+  const tipo=emp.tipo||'juros';
+  // Juros base da parcela
+  const jurosBase=tipo==='consignado'
+    ? parseFloat((emp.valor_total_consignado/parcelas.filter(x=>x.emprestimo_id===emp.id).length).toFixed(2))
+    : parseFloat((emp.valor*emp.juros).toFixed(2));
+  // Mora diária (só para juros mensal)
+  const diasAtrasConf=tipo==='juros'&&isAtrasada(p)?Math.floor((new Date()-new Date(p.vencimento+'T12:00:00'))/(1000*60*60*24)):0;
+  const mora=tipo==='juros'&&diasAtrasConf>0?parseFloat((jurosBase/30*diasAtrasConf).toFixed(2)):0;
+  const jurosParc=parseFloat((jurosBase+mora).toFixed(2));
   // Saldo devedor atual
-  const saldo=parseFloat((emp.saldo_devedor!=null?emp.saldo_devedor:emp.valor).toFixed(2));
+  const saldo=tipo==='consignado'?0:parseFloat((emp.saldo_devedor!=null?emp.saldo_devedor:emp.valor).toFixed(2));
 
   const div=document.createElement('div');
   div.id='confirm-pay-'+id;
@@ -1724,9 +1846,13 @@ function confirmarPagamento(id, empId){
 
     <!-- JUROS (OBRIGATÓRIO) -->
     <div style="margin-bottom:.85rem">
-      <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Juros cobrado (obrigatório)</div>
-      <div style="padding:.7rem 1rem;background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--rs);font-family:var(--FT);font-size:1.3rem;color:var(--grn);text-align:center">${fmtR(jurosParc)}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${tipo==='consignado'?'Parcela':'Juros cobrado'} (obrigatório)</div>
+      <div style="padding:.7rem 1rem;background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--rs);text-align:center">
+        <div style="font-family:var(--FT);font-size:1.3rem;color:var(--grn)">${fmtR(jurosParc)}</div>
+        ${mora>0?`<div style="font-size:11px;color:var(--red);margin-top:3px">Inclui mora de ${diasAtrasConf}d: ${fmtR(mora)}</div>`:''}
+      </div>
     </div>
+    ${tipo==='consignado'?`<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--rs);padding:.65rem 1rem;margin-bottom:.85rem;font-size:12px;color:#1e40af">📋 Consignado — parcela fixa sem abatimento de capital</div>`:''}
 
     <!-- ABATIMENTO (OPCIONAL) -->
     <div style="margin-bottom:.85rem">
