@@ -611,7 +611,7 @@ function showImportPreview(dataRows){
       <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[1]||''}</td>
       <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[2]||''}</td>
       <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">R$ ${Number(r[3]||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${Number(r[4]||0).toFixed(1)}%</td>
+      <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${(()=>{const j=Number(r[4]||0);return(j>1?j:j*100).toFixed(1)+'%';})()}</td>
       <td style="padding:4px 8px;border:1px solid #E5E7EB;font-size:12px">${r[7]||''}</td>
     </tr>`).join('');
 
@@ -727,9 +727,15 @@ function formatDateForDB(val){
   const s=String(val).trim();
   // yyyy-mm-dd
   if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-  // dd/mm/yyyy
-  const m2=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if(m2)return`${m2[3]}-${m2[2]}-${m2[1]}`;
+  // dd/mm/yyyy (4 digitos no ano)
+  const mA=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(mA)return`${mA[3]}-${mA[2]}-${mA[1]}`;
+  // dd/mm/yy (2 digitos no ano — texto manual, ex: 01/06/25)
+  const mB=s.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+  if(mB){const y=parseInt(mB[3]);return`${y<50?2000+y:1900+y}-${mB[2]}-${mB[1]}`;}
+  // m/d/yy ou m/d/yyyy — formato americano do xlsx.js (ex: 5/1/25 = 1 de maio)
+  const mC=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(mC){const y=parseInt(mC[3]);const fy=y<100?(y<50?2000+y:1900+y):y;return`${fy}-${String(parseInt(mC[1])).padStart(2,'0')}-${String(parseInt(mC[2])).padStart(2,'0')}`;}
   return null;
 }
 
