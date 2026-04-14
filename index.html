@@ -951,6 +951,7 @@ async function bootApp(){
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
   buildSidebar();showPage('dashboard');
   if(_notifAtivo())iniciarVerificacaoAutomatica();
+  if(session.role==='admin')verificarRenovacoesPendentes();
 }
 
 function doLogout(){
@@ -2847,13 +2848,76 @@ async function savePerfilSenha(){
 }
 
 // ══ USUÁRIOS ══
-function renderUsuarios(){
-  document.getElementById('main-content').innerHTML=`
+async function renderUsuarios(){
+  const mc=document.getElementById('main-content');
+  mc.innerHTML=`
     <div class="sec-hdr">
       <span class="sec-title">Usuários</span>
       <button class="btn btn-p btn-sm" onclick="openUsrModal(null)">+ Novo Usuário</button>
     </div>
+    <div id="renov-pendentes-section"></div>
     <div id="usr-list">${usrListHTML()}</div>`;
+
+  // Carrega renovações pendentes
+  await carregarRenovacoesPendentes();
+}
+
+async function carregarRenovacoesPendentes(){
+  const sec=document.getElementById('renov-pendentes-section');
+  if(!sec)return;
+  try{
+    const{data,error}=await sb.from('renovacoes').select('*').eq('status','pendente').order('created_at',{ascending:false});
+    if(error||!data||!data.length){sec.innerHTML='';return;}
+
+    sec.innerHTML=`
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--r);padding:1.25rem;margin-bottom:1.25rem">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-weight:700;color:#92400E;font-size:14px">Renovações Pendentes (${data.length})</span>
+        </div>
+        ${data.map(r=>`
+          <div style="background:#fff;border:1px solid #FDE68A;border-radius:var(--rs);padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;gap:.75rem;flex-wrap:wrap">
+            <div>
+              <div style="font-weight:700;font-size:14px">${r.user_nome}</div>
+              <div style="font-size:12px;color:var(--n4)">@${r.user_login} · ${r.plano} · <strong style="color:#EA580C">R$ ${Number(r.valor).toFixed(2).replace('.',',')}</strong></div>
+              <div style="font-size:11px;color:var(--n4);margin-top:2px">${new Date(r.created_at).toLocaleString('pt-BR')}</div>
+            </div>
+            <div style="display:flex;gap:.4rem">
+              <button class="btn btn-sm" style="background:#16A34A;color:#fff" onclick="confirmarRenovacao('${r.id}','${r.user_id}',${r.dias})">✓ Confirmar</button>
+              <button class="btn btn-d btn-sm" onclick="rejeitarRenovacao('${r.id}')">✕ Rejeitar</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }catch(e){console.warn('Erro ao carregar renovacoes',e);}
+}
+
+async function confirmarRenovacao(renovId, userId, dias){
+  if(!confirm('Confirmar pagamento e renovar acesso por '+dias+' dias?'))return;
+  // Calcula nova data de expiração
+  const u=users.find(x=>x.id===userId);
+  const base=u?.expires_at&&new Date(u.expires_at)>new Date()?new Date(u.expires_at):new Date();
+  base.setDate(base.getDate()+dias);
+  const novaData=base.toISOString().split('T')[0];
+
+  // Atualiza user
+  const{error:ue}=await sb.from('users').update({expires_at:novaData}).eq('id',userId);
+  if(ue){toast('Erro ao atualizar acesso',true);return;}
+
+  // Marca renovação como confirmada
+  await sb.from('renovacoes').update({status:'confirmado'}).eq('id',renovId);
+
+  // Atualiza local
+  users=users.map(u=>u.id===userId?{...u,expires_at:novaData}:u);
+
+  toast('✓ Acesso renovado até '+new Date(novaData).toLocaleDateString('pt-BR')+'!');
+  renderUsuarios();
+}
+
+async function rejeitarRenovacao(renovId){
+  if(!confirm('Rejeitar esta solicitação?'))return;
+  await sb.from('renovacoes').update({status:'rejeitado'}).eq('id',renovId);
+  toast('Solicitação rejeitada.');
+  renderUsuarios();
 }
 
 function usrListHTML(){
@@ -3396,14 +3460,53 @@ function copiarPix(){
   });
 }
 
-function avisarPagamento(){
+async function avisarPagamento(){
   const plano=window._renovPlanoSel;
   if(!plano)return;
+
+  const btn=document.querySelector('#renov-modal .btn-grn');
+  if(btn){btn.textContent='Registrando...';btn.disabled=true;}
+
+  // Registra solicitação no Supabase
+  try{
+    await sb.from('renovacoes').insert({
+      user_id:session.id,
+      user_nome:session.nome,
+      user_login:session.login,
+      plano:plano.label,
+      dias:plano.dias,
+      valor:plano.valor,
+      status:'pendente'
+    });
+  }catch(e){console.warn('Erro ao registrar renovacao',e);}
+
+  // Envia WhatsApp
   const msg=`Olá! Acabei de realizar o pagamento via PIX para renovação do AGPainel.%0A%0A👤 Usuário: ${session.nome}%0A📋 Login: @${session.login}%0A📅 Plano: ${plano.label}%0A💰 Valor: R$ ${plano.valor.toFixed(2).replace('.',',')}%0A%0AAguardo a liberação do acesso. Obrigado!`;
   const tel='5591985919201';
   window.open('https://wa.me/'+tel+'?text='+msg,'_blank');
+
+  if(btn){btn.textContent='✓ Solicitação enviada!';btn.style.background='#166534';}
+  toast('✓ Solicitação registrada! Aguarde a confirmação do admin.');
+  setTimeout(()=>closeM('renov-modal'),2500);
 }
 
+
+
+async function verificarRenovacoesPendentes(){
+  try{
+    const{data}=await sb.from('renovacoes').select('id').eq('status','pendente');
+    if(data&&data.length>0){
+      const siUsr=document.getElementById('si-usuarios');
+      if(siUsr&&!siUsr.querySelector('.renov-badge')){
+        const badge=document.createElement('span');
+        badge.className='renov-badge';
+        badge.textContent=data.length;
+        badge.style.cssText='background:#DC2626;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;margin-left:auto';
+        siUsr.appendChild(badge);
+      }
+    }
+  }catch(e){}
+}
 
 // ══ RELATÓRIO ══
 function navAno(delta){
