@@ -3206,6 +3206,61 @@ function enviarAvisosWa(){
   window.open(url,'_blank');
 }
 
+
+function exportRelatPDF(){
+  const mc=document.getElementById('main-content');
+  if(!mc)return;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AGPainel — Relatório</title>
+  <style>body{font-family:Arial,sans-serif;padding:2rem;font-size:13px}h1{font-size:1.3rem;margin-bottom:1rem}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+  .card{border:1px solid #E5E7EB;border-radius:8px;padding:1rem}
+  canvas{max-height:200px}@media print{button{display:none}}</style></head>
+  <body><h1>AGPainel — Relatório</h1>
+  ${mc.innerHTML.replace(/<script[\s\S]*?<\/script>/gi,'')}
+  <br><button onclick="window.print()" style="padding:.5rem 1.5rem;background:#111827;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Salvar como PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+function exportRelatCSV(){
+  const R=window._relat||{modo:'mes'};
+  const hoje=new Date();
+  let dtI=null,dtF=null;
+  if(R.modo==='dia'){dtI=new Date(R.y,R.m,R.d,0,0,0);dtF=new Date(R.y,R.m,R.d,23,59,59);}
+  else if(R.modo==='mes'){dtI=new Date(R.y,R.m,1);dtF=new Date(R.y,R.m+1,0,23,59,59);}
+  else if(R.modo==='ano'){dtI=new Date(R.y,0,1);dtF=new Date(R.y,11,31,23,59,59);}
+
+  const myEmps=session.role==='admin'?emprestimos:emprestimos.filter(e=>e.owner_id===session.id);
+  const empsF=dtI?myEmps.filter(e=>{const d=new Date(e.data_emprestimo+'T12:00:00');return d>=dtI&&d<=dtF;}):myEmps;
+  const empIds=new Set(myEmps.map(e=>e.id));
+  const myParcs=parcelas.filter(p=>empIds.has(p.emprestimo_id));
+  const parcsPagas=myParcs.filter(p=>p.status==='pago'&&p.pago_em&&(!dtI||(new Date(p.pago_em+'T12:00:00')>=dtI&&new Date(p.pago_em+'T12:00:00')<=dtF)));
+
+  const rows=[['TOMADOR','VALOR EMPRESTADO','JUROS','DATA','STATUS','RECEBIDO']];
+  empsF.forEach(e=>{
+    const tom=tomadores.find(t=>t.id===e.tomador_id);
+    const rec=parcelas.filter(p=>p.emprestimo_id===e.id&&p.status==='pago').reduce((s,p)=>s+Number(p.valor_pago||p.valor||0),0);
+    rows.push([tom?.nome||'',e.valor,(e.juros*100).toFixed(1)+'%',e.data_emprestimo,e.tipo||'juros',rec.toFixed(2)]);
+  });
+  rows.push([]);
+  rows.push(['PARCELAS PAGAS NO PERÍODO','','','','','']);
+  rows.push(['TOMADOR','PARCELA','DATA PAGAMENTO','VALOR PAGO','','']);
+  parcsPagas.forEach(p=>{
+    const emp=myEmps.find(e=>e.id===p.emprestimo_id);
+    const tom=tomadores.find(t=>t.id===emp?.tomador_id);
+    rows.push([tom?.nome||'',p.numero,p.pago_em,Number(p.valor_pago||p.valor).toFixed(2),'','']);
+  });
+
+  const csvEsc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const csv=rows.map(r=>r.map(csvEsc).join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='AGPainel_Relatorio_'+today()+'.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},300);
+  toast('✓ CSV exportado!');
+}
+
 // ══ RELATÓRIO ══
 function navAno(delta){
   if(!window._relatMes){const n=new Date();window._relatMes={y:n.getFullYear(),m:n.getMonth()};}
@@ -3247,13 +3302,13 @@ function renderRelatorio(){
 
   // Empréstimos e parcelas do usuário logado
   const myEmps=session.role==='admin'?emprestimos:emprestimos.filter(e=>e.owner_id===session.id);
-  const empsF=myEmps.filter(e=>{const d=new Date(e.data_emprestimo+'T12:00:00');return d>=dtInicio&&d<=dtFim;});
+  const empsF=dtInicio?myEmps.filter(e=>{const d=new Date(e.data_emprestimo+'T12:00:00');return d>=dtInicio&&d<=dtFim;}):myEmps;
   const empIds=new Set(myEmps.map(e=>e.id));
   const myParcs=parcelas.filter(p=>empIds.has(p.emprestimo_id));
 
   // ── Métricas gerais ──────────────────────────────────────
   const totalEmp=empsF.reduce((s,e)=>s+Number(e.valor||0),0);
-  const parcsPagas=myParcs.filter(p=>p.status==='pago'&&p.pago_em&&new Date(p.pago_em+'T12:00:00')>=dtInicio&&new Date(p.pago_em+'T12:00:00')<=dtFim);
+  const parcsPagas=myParcs.filter(p=>p.status==='pago'&&p.pago_em&&(!dtInicio||(new Date(p.pago_em+'T12:00:00')>=dtInicio&&new Date(p.pago_em+'T12:00:00')<=dtFim)));
   const totalRec=parcsPagas.reduce((s,p)=>s+Number(p.valor_pago||p.valor||0),0);
   const parcsAtras=myParcs.filter(p=>isAtrasada(p));
   const totalAtras=parcsAtras.reduce((s,p)=>s+Number(p.valor||0),0);
@@ -3299,23 +3354,59 @@ function renderRelatorio(){
     proj.push({label:d.toLocaleString('pt-BR',{month:'short',year:'2-digit'}),val});
   }
 
+  // ── Seletores de dropdowns ───────────────────────────────
+  const diasNoMes=new Date(R.y,R.m+1,0).getDate();
+  const selDia=Array.from({length:diasNoMes},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===R.d?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
+  const selMesOpts=meses_nomes.map((n,i)=>`<option value="${i}" ${i===R.m?'selected':''}>${n}</option>`).join('');
+  const anoAtual=hoje.getFullYear();
+  const selAnoOpts=Array.from({length:6},(_,i)=>anoAtual-i).map(a=>`<option value="${a}" ${a===R.y?'selected':''}>${a}</option>`).join('');
+
+  const selStyle='padding:.35rem .65rem;border:1px solid #E5E7EB;border-radius:var(--rs);background:var(--card);color:var(--n1);font-size:13px;font-weight:600;cursor:pointer;';
+  const calIcon='<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+
   mc.innerHTML=`
-    <div class="sec-hdr">
-      <span class="sec-title">Relatório</span>
-      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-        <!-- Seletor compacto: « ‹ Mês·Ano › » -->
-        <div style="display:inline-flex;align-items:center;background:var(--card);border:1px solid #E5E7EB;border-radius:999px;overflow:hidden;box-shadow:var(--sh)">
-          <button onclick="navAno(-1)" title="Ano anterior" style="padding:.45rem .75rem;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:700;color:var(--n3);border-right:1px solid #E5E7EB;line-height:1">«</button>
-          <button onclick="navMes(-1)" title="Mês anterior" style="padding:.45rem .65rem;border:none;background:transparent;cursor:pointer;font-size:15px;color:var(--n2);border-right:1px solid #E5E7EB;line-height:1">‹</button>
-          <span style="padding:.35rem .85rem;font-size:13px;font-weight:700;color:var(--n1);white-space:nowrap;min-width:120px;text-align:center">
-            ${new Date(selY,selM,1).toLocaleString('pt-BR',{month:'short'}).replace('.','').replace(/^./,c=>c.toUpperCase())} ${selY}
-          </span>
-          <button onclick="navMes(1)" title="Próximo mês" ${isMesAtual?'disabled':''}
-            style="padding:.45rem .65rem;border:none;background:transparent;cursor:${isMesAtual?'not-allowed':'pointer'};font-size:15px;color:var(--n2);border-left:1px solid #E5E7EB;opacity:${isMesAtual?'.3':'1'};line-height:1">›</button>
-          <button onclick="navAno(1)" title="Próximo ano" ${selY>=mesAtualY?'disabled':''}
-            style="padding:.45rem .75rem;border:none;background:transparent;cursor:${selY>=mesAtualY?'not-allowed':'pointer'};font-size:13px;font-weight:700;color:var(--n3);border-left:1px solid #E5E7EB;opacity:${selY>=mesAtualY?'.3':'1'};line-height:1">»</button>
-        </div>
-        ${!isMesAtual?`<button class="pill" onclick="window._relatMes=null;renderRelatorio()" style="font-size:11px;background:#EA580C;color:#fff;border-color:#EA580C">Hoje</button>`:''}
+    <div class="sec-hdr"><span class="sec-title">Relatório</span></div>
+
+    <!-- SELETOR DE PERÍODO -->
+    <div style="background:var(--card);border:1px solid #E5E7EB;border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--sh)">
+      <div style="font-size:11px;font-weight:700;color:var(--n4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.65rem">Período</div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:.4rem;margin-bottom:.85rem;flex-wrap:wrap">
+        ${['dia','mes','ano','tudo'].map((m,i)=>{
+          const labels=['Diário','Mês','Ano','Tudo'];
+          const active=R.modo===m;
+          return`<button onclick="window._relat.modo='${m}';renderRelatorio()" style="padding:.4rem 1rem;border-radius:var(--rs);border:1px solid ${active?'#16A34A':'#E5E7EB'};background:${active?'#16A34A':'var(--card)'};color:${active?'#fff':'var(--n2)'};font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">${labels[i]}</button>`;
+        }).join('')}
+      </div>
+
+      <!-- Dropdowns conforme modo -->
+      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+        ${R.modo==='dia'?`
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.m=parseInt(this.value);renderRelatorio()">${selMesOpts}</select></div>
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.d=parseInt(this.value);renderRelatorio()">${selDia}</select></div>
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.y=parseInt(this.value);renderRelatorio()">${selAnoOpts}</select></div>
+        `:R.modo==='mes'?`
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.m=parseInt(this.value);renderRelatorio()">${selMesOpts}</select></div>
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.y=parseInt(this.value);renderRelatorio()">${selAnoOpts}</select></div>
+        `:R.modo==='ano'?`
+          <div style="display:flex;align-items:center;gap:.35rem">${calIcon}<select style="${selStyle}" onchange="window._relat.y=parseInt(this.value);renderRelatorio()">${selAnoOpts}</select></div>
+        `:''}
+      </div>
+
+      <!-- Exibindo -->
+      <div style="font-size:12px;color:var(--n4);margin-bottom:.85rem;font-style:italic">Exibindo: <strong style="color:var(--n2)">${exibindo}</strong></div>
+
+      <!-- Botões de exportação -->
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-g btn-sm" onclick="exportRelatPDF()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar PDF
+        </button>
+        <button class="btn btn-g btn-sm" onclick="exportRelatCSV()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar Excel (CSV)
+        </button>
       </div>
     </div>
 
