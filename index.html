@@ -1245,7 +1245,7 @@ function renderEmprestimos(){
           <th class="sortable" id="th-sort-juros" onclick="sortEmp('juros')">Juros<span class="sort-icon"></span></th>
           <th class="sortable" id="th-sort-total" onclick="sortEmp('total')">Total<span class="sort-icon"></span></th>
           <th class="sortable" id="th-sort-data" onclick="sortEmp('data')">Data<span class="sort-icon"></span></th>
-          <th class="sortable" id="th-sort-parcelas" onclick="sortEmp('parcelas')">Parcelas<span class="sort-icon"></span></th>
+          <th class="sortable" id="th-sort-parcelas" onclick="sortEmp('parcelas')">Parcelas/Juros<span class="sort-icon"></span></th>
           <th></th>
         </tr></thead>
         <tbody id="emp-tbody">${empTbodyHTML(emprestimos)}</tbody>
@@ -1358,7 +1358,7 @@ function empTbodyHTML(list){
       <td style="color:var(--n4);font-size:12px">${fmtDate(e.data_emprestimo)}</td>
       <td>
         ${parcsEmp.length===0
-          ?`<button class="btn btn-xs btn-g" onclick="addParcela('${e.id}')">Ilimitado</button>`
+          ?`<button class="btn btn-xs btn-g" onclick="addParcela('${e.id}')">${(e.tipo||'juros')==='consignado'?'Parcelas':'Juros'}</button>`
           :`<button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
             ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
           </button>`}
@@ -1740,7 +1740,7 @@ function openParcelas(empId){
     <!-- BARRA DE PROGRESSO -->
     ${parcsEmp.length?`<div style="margin-bottom:1rem">
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--n4);margin-bottom:4px">
-        <span>${parcsEmp.filter(p=>p.status==='pago').length} de ${parcsEmp.length} parcelas pagas</span>
+        <span>${parcsEmp.filter(p=>p.status==='pago').length} de ${parcsEmp.length} ${lblParcela(emp,true).toLowerCase()} pagas</span>
         <span>${progPct}%</span>
       </div>
       <div style="background:#E5E7EB;border-radius:999px;height:8px;overflow:hidden">
@@ -1750,7 +1750,7 @@ function openParcelas(empId){
 
     <!-- LISTA DE PARCELAS -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-      <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em">Parcelas</div>
+      <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em">${lblParcela(emp,true)}</div>
       ${parcsEmp.filter(p=>p.status==='pendente').length>0?`
       <button class="btn btn-xs btn-g" id="btn-sel-parc" onclick="toggleSelecaoParc('${empId}')" style="font-size:11px">Selecionar</button>`:''}
     </div>
@@ -1770,7 +1770,7 @@ function openParcelas(empId){
         ${p.status==='pendente'?`<input type="checkbox" class="chk-parc" data-id="${p.id}" onchange="onChkParcChange('${empId}')" style="width:15px;height:15px;cursor:pointer;margin-right:.5rem;flex-shrink:0;display:none"/>`:'<div style="width:21px;flex-shrink:0"></div>'}
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':vencHoje?'var(--amb)':'var(--n1)'}">
-            ${p.numero}ª Parcela
+            ${p.numero}º ${lblParcela(emp)}
             ${atras?`<span style="font-size:10px;font-weight:400;background:var(--red);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">${diasAtras}d atraso</span>`:''}
             ${vencHoje?`<span style="font-size:10px;font-weight:400;background:var(--amb);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">Vence hoje</span>`:''}
             ${(emp?.tipo||'juros')==='juros'&&atras?(()=>{const mora=parseFloat((p.valor/30*diasAtras).toFixed(2));return`<span style="font-size:10px;font-weight:600;color:var(--red);margin-left:4px">+ ${fmtR(mora)} mora</span>`;})():''}
@@ -1805,7 +1805,7 @@ function openParcelas(empId){
   const footer=document.getElementById('parc-modal').querySelector('.mfooter');
   footer.innerHTML=`
     <button class="btn btn-g btn-sm" onclick="closeM('parc-modal');openClientView('${tom2?.id}')">← Voltar</button>
-    <button class="btn btn-p btn-sm" onclick="addParcela('${empId}')">+ Parcela</button>`;
+    <button class="btn btn-p btn-sm" onclick="addParcela('${empId}')">+ ${lblParcela(emp)}</button>`;
   openM('parc-modal');
   // Scroll to bottom so latest parcelas are visible
   setTimeout(()=>{
@@ -1840,7 +1840,7 @@ function confirmarPagamento(id, empId){
 
     <!-- INFO PARCELA -->
     <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--n3)">
-      <strong>${p.numero}ª Parcela</strong> · Venc: ${fmtDate(p.vencimento)}<br>
+      <strong>${p.numero}º ${lblParcela(emp)}</strong> · Venc: ${fmtDate(p.vencimento)}<br>
       <span style="color:var(--n4)">Saldo devedor atual: <strong style="color:var(--red)">${fmtR(saldo)}</strong></span>
     </div>
 
@@ -1993,7 +1993,7 @@ async function autoGerarProximaParcela(empId, saldoOverride){
 
   if(error){console.error('Erro ao gerar próxima parcela',error);return;}
   parcelas.push(nova);
-  toast(`✓ Próxima parcela gerada automaticamente: ${fmtDate(novaData)}`);
+  toast(`✓ ${lblProximo(emp)} gerado automaticamente: ${fmtDate(novaData)}`);
 }
 
 async function marcarPago(id){
@@ -2778,6 +2778,17 @@ function iniciarVerificacaoAutomatica(){
   _notifInterval=setInterval(()=>{
     if(Notification.permission==='granted'&&session)verificarVencimentos();
   },30*60*1000);
+}
+
+
+// ══ TERMINOLOGIA POR TIPO ══
+function lblParcela(emp, plural=false){
+  const tipo=emp?.tipo||'juros';
+  if(tipo==='consignado') return plural?'Parcelas':'Parcela';
+  return plural?'Juros':'Juros';
+}
+function lblProximo(emp){
+  return (emp?.tipo||'juros')==='consignado'?'Próxima Parcela':'Próximo Vencimento';
 }
 
 // ══ WHATSAPP GESTOR ══
