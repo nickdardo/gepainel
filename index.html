@@ -1357,11 +1357,23 @@ function empTbodyHTML(list){
       <td class="hide-mobile-juros" style="font-weight:600;color:var(--grn)">${fmtR(e.valor_total)}</td>
       <td style="color:var(--n4);font-size:12px">${fmtDate(e.data_emprestimo)}</td>
       <td>
-        ${parcsEmp.length===0
-          ?`<button class="btn btn-xs btn-g" onclick="addParcela('${e.id}')">${(e.tipo||'juros')==='consignado'?'Parcelas':'Juros'}</button>`
-          :`<button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
-            ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
-          </button>`}
+        ${(()=>{
+          const tipo=e.tipo||'juros';
+          if(parcsEmp.length===0){
+            return`<button class="btn btn-xs btn-g" onclick="addParcela('${e.id}')">${tipo==='consignado'?'Parcelas':'Juros'}</button>`;
+          }
+          if(tipo==='juros'){
+            // Juros mensal: mostra "X juros pagos" ou "em atraso"
+            if(allPago) return`<button class="btn btn-xs btn-grn" onclick="openParcelas('${e.id}')">✅ Quitado</button>`;
+            if(atCnt)   return`<button class="btn btn-xs btn-d"   onclick="openParcelas('${e.id}')">⚠️ ${atCnt} em atraso</button>`;
+            return`<button class="btn btn-xs btn-amb" onclick="openParcelas('${e.id}')">💰 ${pgCnt} pago${pgCnt!==1?'s':''}</button>`;
+          } else {
+            // Consignado: mantém X/Y
+            return`<button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
+              ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
+            </button>`;
+          }
+        })()}
       </td>
       <td>
         <div style="display:flex;gap:.3rem">
