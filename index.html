@@ -302,6 +302,66 @@ body.dark .info-box{background:#1C0E04;border-color:#431407}
   text-transform: uppercase;
 }
 
+
+/* ── DARK MODE — MODAIS DINÂMICOS ───────────────────────── */
+body.dark .client-view-modal-inner,
+body.dark #client-view-modal > div,
+body.dark [id^="confirm-pay-"] > div,
+body.dark [id^="import-preview-modal"] > div {
+  background:#1E293B!important;
+  color:#F1F5F9!important;
+}
+body.dark #client-view-modal > div *,
+body.dark [id^="confirm-pay-"] > div *{
+  border-color:#334155!important;
+}
+/* Sticky header do client-view */
+body.dark #client-view-modal div[style*="position:sticky"],
+body.dark #client-view-modal div[style*="background:#fff"],
+body.dark [id^="confirm-pay-"] div[style*="background:#fff"],
+body.dark [id^="confirm-pay-"] div[style*="background:#F9FAFB"],
+body.dark [id^="import-preview-modal"] div[style*="background:#fff"]{
+  background:#1E293B!important;
+  color:#F1F5F9!important;
+}
+body.dark #client-view-modal div[style*="background:#F9FAFB"],
+body.dark #client-view-modal div[style*="background:#FAFAFA"],
+body.dark #client-view-modal div[style*="background:#F3F4F6"],
+body.dark #client-view-modal div[style*="background:#EFF6FF"]{
+  background:#0F172A!important;
+}
+body.dark #client-view-modal div[style*="border:1px solid #E5E7EB"]{
+  border-color:#334155!important;
+}
+/* Cores de texto nos modais dinâmicos */
+body.dark #client-view-modal span[style*="color:#6B7280"],
+body.dark #client-view-modal span[style*="color:var(--n4)"],
+body.dark #client-view-modal div[style*="color:var(--n4)"],
+body.dark #client-view-modal div[style*="color:var(--n3)"],
+body.dark #client-view-modal div[style*="color:#374151"]{
+  color:#94A3B8!important;
+}
+body.dark #client-view-modal div[style*="color:var(--n1)"],
+body.dark #client-view-modal div[style*="color:var(--n2)"],
+body.dark #client-view-modal span[style*="color:var(--n2)"]{
+  color:#F1F5F9!important;
+}
+/* Barra de progresso */
+body.dark #client-view-modal div[style*="background:#E5E7EB"]{
+  background:#334155!important;
+}
+/* Parcela rows */
+body.dark #parc-modal .mbody div[style*="background:#FAFAFA"],
+body.dark #parc-modal .mbody div[style*="background:#F9FAFB"]{
+  background:#0F172A!important;
+}
+body.dark #parc-modal .mbody div[style*="background:#F0FDF4"]{
+  background:#052e16!important;
+}
+body.dark #parc-modal .mbody div[style*="background:#FEF2F2"]{
+  background:#2d0707!important;
+}
+
 /* ── WHATSAPP GESTOR ────────────────────────────────────────── */
 .wa-nav-btn{display:flex;align-items:center;gap:6px;padding:.3rem .75rem;border-radius:var(--rs);background:#16A34A;color:#fff;border:none;font-family:var(--FB);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap}
 .wa-nav-btn:hover{background:#15803D}
