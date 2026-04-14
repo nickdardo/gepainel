@@ -375,6 +375,13 @@ body.dark #parc-modal .mbody div[style*="background:#FEF2F2"]{
 .wa-nav-btn:hover{background:#15803D}
 .wa-nav-btn.unset{background:transparent;border:1px solid #374151;color:#9CA3AF}
 .wa-nav-btn.unset:hover{background:#1F2937;color:#fff}
+
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.6);transform:scale(1)}
+  50%{box-shadow:0 0 0 8px rgba(22,163,74,.0);transform:scale(1.05)}
+}
+.wa-pulsing{animation:pulse-glow 1.4s ease-in-out infinite!important}
+
 .wa-modal-inner{background:#fff;border-radius:var(--r);padding:1.75rem;max-width:400px;width:100%;box-shadow:var(--shm)}
 
 /* ── PRINT ──────────────────────────────────────────────────── */
@@ -386,6 +393,20 @@ body.dark #parc-modal .mbody div[style*="background:#FEF2F2"]{
   #chart-fluxo,#chart-proj,#chart-inad{max-height:180px}
   #chart-saude{max-height:140px}
   #chart-tipo{max-height:110px!important;max-width:110px!important}
+}
+
+
+/* ── BOTTOM NAV MOBILE ──────────────────────────────────── */
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.35rem .5rem;background:none;border:none;cursor:pointer;font-size:10px;font-weight:600;color:var(--n4);min-width:52px;border-radius:var(--rs);transition:color .15s}
+.bnav-item.active{color:var(--grn)}
+.bnav-item svg{width:20px;height:20px;stroke:currentColor}
+body.bottom-nav-mode .sidebar{display:none!important}
+body.bottom-nav-mode .app-body{min-height:calc(100vh - 56px - 60px)}
+body.bottom-nav-mode .content{padding-bottom:80px}
+body.bottom-nav-mode #bottom-nav{display:block!important}
+@media(min-width:769px){
+  body.bottom-nav-mode .sidebar{display:flex!important}
+  body.bottom-nav-mode #bottom-nav{display:none!important}
 }
 
 /* ── MOBILE TABLE COLUMNS ───────────────────────────────────── */
@@ -480,7 +501,13 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
       <button class="dark-btn" id="dark-toggle" onclick="toggleDarkMode()" title="Alternar tema"></button>
     </div>
   </nav>
-  <!-- BUSCA GLOBAL -->
+  
+<!-- BOTTOM NAV MOBILE -->
+<nav id="bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid #E5E7EB;z-index:90;padding:.4rem 0 calc(.4rem + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,.08)">
+  <div id="bottom-nav-items" style="display:flex;justify-content:space-around;align-items:center"></div>
+</nav>
+
+<!-- BUSCA GLOBAL -->
   <div class="gsearch-ov" id="gsearch-ov" onclick="if(event.target===this)closeGlobalSearch()">
     <div class="gsearch-box">
       <div class="gsearch-row">
@@ -760,6 +787,49 @@ function toast(msg,err=false){const t=document.createElement('div');t.className=
 function openM(id){document.getElementById(id).style.display='flex';}
 function closeM(id){document.getElementById(id).style.display='none';}
 
+
+// ══ BOTTOM NAV ══
+function toggleBottomNav(on){
+  const prev=localStorage.getItem('ep_bottom_nav')==='1';
+  const ativo=on!==undefined?on:!prev;
+  localStorage.setItem('ep_bottom_nav',ativo?'1':'0');
+  if(ativo){document.body.classList.add('bottom-nav-mode');}
+  else{document.body.classList.remove('bottom-nav-mode');}
+  renderBottomNav();
+  // Atualiza toggle no perfil se estiver aberto
+  const tog=document.getElementById('bottom-nav-toggle');
+  const knob=document.getElementById('bottom-nav-knob');
+  const lbl=document.getElementById('bottom-nav-lbl');
+  if(tog)tog.style.background=ativo?'#EA580C':'#D1D5DB';
+  if(knob)knob.style.left=ativo?'22px':'2px';
+  if(lbl)lbl.textContent=ativo?'Ativo':'Inativo';
+}
+
+function loadBottomNavPref(){
+  if(localStorage.getItem('ep_bottom_nav')==='1'){
+    document.body.classList.add('bottom-nav-mode');
+    renderBottomNav();
+  }
+}
+
+function renderBottomNav(){
+  const items=document.getElementById('bottom-nav-items');
+  if(!items)return;
+  const tabs=[
+    {id:'dashboard',icon:'dashboard',label:'Início'},
+    {id:'emprestimos',icon:'emprestimos',label:'Emprest.'},
+    {id:'tomadores',icon:'tomadores',label:'Clientes'},
+    {id:'relatorio',icon:'relatorio',label:'Relatório'},
+    {id:'perfil',icon:'perfil',label:'Perfil'},
+  ];
+  const visibles=tabs.filter(t=>can(t.id));
+  items.innerHTML=visibles.map(t=>`
+    <button class="bnav-item${curPage===t.id?' active':''}" onclick="showPage('${t.id}')" id="bnav-${t.id}">
+      ${LUCIDE_ICONS[t.icon]||''}
+      <span>${t.label}</span>
+    </button>`).join('');
+}
+
 // ══ SIDEBAR ══
 function toggleSidebar(){document.getElementById('sidebarEl').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('open');}
 function closeSidebar(){document.getElementById('sidebarEl').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open');}
@@ -802,7 +872,7 @@ function buildSidebar(){
 }
 
 function showPage(p){
-  curPage=p;closeSidebar();
+  curPage=p;closeSidebar();renderBottomNav();
   document.querySelectorAll('.sidebar-item').forEach(e=>e.classList.remove('active'));
   const si=document.getElementById('si-'+p);if(si)si.classList.add('active');
   if(p==='dashboard')renderDashboard();
@@ -949,7 +1019,7 @@ async function bootApp(){
     }
   }catch(e){}
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
-  buildSidebar();showPage('dashboard');
+  buildSidebar();loadBottomNavPref();showPage('dashboard');
   if(_notifAtivo())iniciarVerificacaoAutomatica();
   if(session.role==='admin')verificarRenovacoesPendentes();
 }
@@ -1142,7 +1212,7 @@ function renderDashboard(){
             <div style="display:flex;align-items:center;gap:.5rem">
               <span style="font-size:13px;font-weight:600;color:var(--red)">${fmtR(p.valor)}</span>
               <span class="bdg bdg-atras">Pendente</span>
-              <button class="btn btn-grn btn-xs" onclick="marcarPago('${p.id}')">Confirmar</button>
+              <button class="btn btn-grn btn-xs" onclick="confirmarAtrasoComDupla('${p.id}','${emp?.tomador_id}')">Confirmar</button>
             </div>
           </div>`;
         }).join('')||'<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum atraso. Tudo em dia!</div></div>'}
@@ -2243,6 +2313,25 @@ async function autoGerarProximaParcela(empId, saldoOverride){
   toast(`✓ ${lblProximo(emp)} gerado automaticamente: ${fmtDate(novaData)}`);
 }
 
+
+function confirmarAtrasoComDupla(parcId, tomId){
+  // Primeiro modal de confirmação
+  const div=document.createElement('div');
+  div.id='dupla-confirm-modal';
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem';
+  div.innerHTML=`<div style="background:var(--card);border-radius:var(--r);padding:1.75rem;max-width:360px;width:100%;box-shadow:var(--shm);text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:.75rem">💰</div>
+    <div style="font-family:var(--FT);font-size:1.1rem;color:var(--n1);margin-bottom:.5rem">Confirmar Pagamento?</div>
+    <div style="font-size:13px;color:var(--n4);margin-bottom:1.5rem">Deseja realmente confirmar este pagamento e abrir a ficha do cliente?</div>
+    <div style="display:flex;gap:.5rem;justify-content:center">
+      <button class="btn btn-g btn-sm" onclick="document.getElementById('dupla-confirm-modal').remove()">Cancelar</button>
+      <button class="btn btn-sm" style="background:#EA580C;color:#fff" onclick="document.getElementById('dupla-confirm-modal').remove();openClientView('${tomId}')">Sim, confirmar</button>
+    </div>
+  </div>`;
+  div.onclick=e=>{if(e.target===div)div.remove();};
+  document.body.appendChild(div);
+}
+
 async function marcarPago(id){
   const{data,error}=await sb.from('parcelas').update({status:'pago',pago_em:today()}).eq('id',id).select().single();
   if(error){toast('Erro ao atualizar',true);return;}
@@ -2773,6 +2862,24 @@ function renderPerfil(){
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- PREFERÊNCIAS DO APP -->
+    <div class="card" style="margin-top:1.25rem;max-width:800px">
+      <div class="card-title">Preferências do App</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--n1)">Barra de navegação inferior</div>
+          <div style="font-size:12px;color:var(--n4);margin-top:2px">Substitui o menu lateral por barra no rodapé (ideal para mobile)</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <div id="bottom-nav-toggle" onclick="toggleBottomNav()"
+            style="width:44px;height:24px;border-radius:999px;background:${localStorage.getItem('ep_bottom_nav')==='1'?'#EA580C':'#D1D5DB'};position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
+            <div id="bottom-nav-knob" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${localStorage.getItem('ep_bottom_nav')==='1'?'22':'2'}px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+          </div>
+          <span id="bottom-nav-lbl" style="font-size:13px;font-weight:600;color:var(--n4)">${localStorage.getItem('ep_bottom_nav')==='1'?'Ativo':'Inativo'}</span>
+        </label>
+      </div>
     </div>`;
 }
 
@@ -3094,6 +3201,9 @@ async function toggleNotificacoes(){
 async function ativarNotificacoes(){ await toggleNotificacoes(); }
 
 function dispararNotificacao(titulo, corpo, tag){
+  ativarPulsoWa();
+  tocarAudioAlerta();
+
   if(!_notifAtivo())return;
   if(navigator.vibrate)navigator.vibrate([300,100,300,100,500]);
   const icon="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>";
@@ -3182,6 +3292,35 @@ function lblProximo(emp){
   return (emp?.tipo||'juros')==='consignado'?'Próxima Parcela':'Próximo Vencimento';
 }
 
+
+let _waPulseAtivo=false;
+function ativarPulsoWa(){
+  const btn=document.getElementById('wa-nav-btn');
+  if(btn&&!btn.classList.contains('unset')){
+    btn.classList.add('wa-pulsing');
+    _waPulseAtivo=true;
+  }
+}
+function desativarPulsoWa(){
+  const btn=document.getElementById('wa-nav-btn');
+  if(btn){btn.classList.remove('wa-pulsing');}
+  _waPulseAtivo=false;
+}
+function tocarAudioAlerta(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.setValueAtTime(660,ctx.currentTime+0.1);
+    osc.frequency.setValueAtTime(880,ctx.currentTime+0.2);
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
 // ══ WHATSAPP GESTOR ══
 function loadWaNumber(){
   try{
@@ -3196,6 +3335,7 @@ function loadWaNumber(){
 }
 
 function openWaModal(){
+  desativarPulsoWa();
   try{
     const saved=localStorage.getItem('ep_wa_num')||'';
     document.getElementById('wa-num-input').value=saved;
@@ -3854,6 +3994,20 @@ function printFicha(tomId){
   #chart-fluxo,#chart-proj,#chart-inad{max-height:180px}
   #chart-saude{max-height:140px}
   #chart-tipo{max-height:110px!important;max-width:110px!important}
+}
+
+
+/* ── BOTTOM NAV MOBILE ──────────────────────────────────── */
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.35rem .5rem;background:none;border:none;cursor:pointer;font-size:10px;font-weight:600;color:var(--n4);min-width:52px;border-radius:var(--rs);transition:color .15s}
+.bnav-item.active{color:var(--grn)}
+.bnav-item svg{width:20px;height:20px;stroke:currentColor}
+body.bottom-nav-mode .sidebar{display:none!important}
+body.bottom-nav-mode .app-body{min-height:calc(100vh - 56px - 60px)}
+body.bottom-nav-mode .content{padding-bottom:80px}
+body.bottom-nav-mode #bottom-nav{display:block!important}
+@media(min-width:769px){
+  body.bottom-nav-mode .sidebar{display:flex!important}
+  body.bottom-nav-mode #bottom-nav{display:none!important}
 }
 
 /* ── MOBILE TABLE COLUMNS ───────────────────────────────────── */
