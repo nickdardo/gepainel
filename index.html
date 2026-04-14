@@ -400,14 +400,13 @@ body.dark #parc-modal .mbody div[style*="background:#FEF2F2"]{
 .bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.35rem .5rem;background:none;border:none;cursor:pointer;font-size:10px;font-weight:600;color:var(--n4);min-width:52px;border-radius:var(--rs);transition:color .15s}
 .bnav-item.active{color:var(--grn)}
 .bnav-item svg{width:20px;height:20px;stroke:currentColor}
+/* Barra inferior — controlada por preferência do usuário */
 body.bottom-nav-mode .sidebar{display:none!important}
+body.bottom-nav-mode #bottom-nav{display:flex!important}
 body.bottom-nav-mode .app-body{min-height:calc(100vh - 56px - 60px)}
-body.bottom-nav-mode .content{padding-bottom:80px}
-body.bottom-nav-mode #bottom-nav{display:block!important}
-@media(min-width:769px){
-  body.bottom-nav-mode .sidebar{display:flex!important}
-  body.bottom-nav-mode #bottom-nav{display:none!important}
-}
+body.bottom-nav-mode .content{padding-bottom:80px!important}
+body.bottom-nav-mode .hamburger{display:none!important}
+#bottom-nav{display:none}
 
 /* ── MOBILE TABLE COLUMNS ───────────────────────────────────── */
 @media(max-width:640px){
@@ -502,6 +501,41 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
     </div>
   </nav>
   
+
+<!-- MODAL BOAS-VINDAS / PREFERÊNCIA DE NAVEGAÇÃO -->
+<div id="nav-pref-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:var(--card);border-radius:var(--r);padding:2rem;max-width:400px;width:100%;box-shadow:var(--shm);text-align:center">
+    <div style="font-size:2rem;margin-bottom:.75rem">👋</div>
+    <div style="font-family:var(--FT);font-size:1.2rem;color:var(--n1);margin-bottom:.35rem" id="nav-pref-hello">Bem-vindo!</div>
+    <div style="font-size:13px;color:var(--n4);margin-bottom:1.75rem">Como prefere navegar pelo AGPainel?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+      <!-- Barra inferior -->
+      <button onclick="escolherNavPref('bottom')"
+        style="padding:1.25rem .75rem;border:2px solid #E5E7EB;border-radius:var(--r);background:var(--card);cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:.6rem"
+        onmouseover="this.style.borderColor='#EA580C';this.style.background='#FFF7ED'"
+        onmouseout="this.style.borderColor='#E5E7EB';this.style.background='var(--card)'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="2" y1="19" x2="22" y2="19" stroke-width="2.5"/></svg>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n1)">📱 Barra inferior</div>
+          <div style="font-size:11px;color:var(--n4);margin-top:3px">Ideal para celular</div>
+        </div>
+      </button>
+      <!-- Menu lateral -->
+      <button onclick="escolherNavPref('sidebar')"
+        style="padding:1.25rem .75rem;border:2px solid #E5E7EB;border-radius:var(--r);background:var(--card);cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:.6rem"
+        onmouseover="this.style.borderColor='#2563EB';this.style.background='#EFF6FF'"
+        onmouseout="this.style.borderColor='#E5E7EB';this.style.background='var(--card)'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--n1)">☰ Menu lateral</div>
+          <div style="font-size:11px;color:var(--n4);margin-top:3px">Ideal para tablet/PC</div>
+        </div>
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--n4)">Você pode mudar depois em <strong>Meu Perfil → Preferências</strong></div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV MOBILE -->
 <nav id="bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid #E5E7EB;z-index:90;padding:.4rem 0 calc(.4rem + env(safe-area-inset-bottom));box-shadow:0 -2px 10px rgba(0,0,0,.08)">
   <div id="bottom-nav-items" style="display:flex;justify-content:space-around;align-items:center"></div>
@@ -789,27 +823,36 @@ function closeM(id){document.getElementById(id).style.display='none';}
 
 
 // ══ BOTTOM NAV ══
-function toggleBottomNav(on){
-  const prev=localStorage.getItem('ep_bottom_nav')==='1';
-  const ativo=on!==undefined?on:!prev;
-  localStorage.setItem('ep_bottom_nav',ativo?'1':'0');
-  if(ativo){document.body.classList.add('bottom-nav-mode');}
-  else{document.body.classList.remove('bottom-nav-mode');}
+
+function mostrarModalNavPref(nomeUsuario){
+  // Só mostra se nunca escolheu
+  if(localStorage.getItem('ep_nav_pref'))return;
+  const modal=document.getElementById('nav-pref-modal');
+  const hello=document.getElementById('nav-pref-hello');
+  if(hello)hello.textContent='Bem-vindo(a), '+nomeUsuario.split(' ')[0]+'!';
+  if(modal){modal.style.display='flex';}
+}
+
+function escolherNavPref(pref){
+  localStorage.setItem('ep_nav_pref',pref);
+  const modal=document.getElementById('nav-pref-modal');
+  if(modal)modal.style.display='none';
+  aplicarNavPref();
+  toast('✓ Preferência salva!');
+}
+
+function aplicarNavPref(){
+  const pref=localStorage.getItem('ep_nav_pref')||'sidebar';
+  if(pref==='bottom'){
+    document.body.classList.add('bottom-nav-mode');
+  } else {
+    document.body.classList.remove('bottom-nav-mode');
+  }
   renderBottomNav();
-  // Atualiza toggle no perfil se estiver aberto
-  const tog=document.getElementById('bottom-nav-toggle');
-  const knob=document.getElementById('bottom-nav-knob');
-  const lbl=document.getElementById('bottom-nav-lbl');
-  if(tog)tog.style.background=ativo?'#EA580C':'#D1D5DB';
-  if(knob)knob.style.left=ativo?'22px':'2px';
-  if(lbl)lbl.textContent=ativo?'Ativo':'Inativo';
 }
 
 function loadBottomNavPref(){
-  if(localStorage.getItem('ep_bottom_nav')==='1'){
-    document.body.classList.add('bottom-nav-mode');
-    renderBottomNav();
-  }
+  aplicarNavPref();
 }
 
 function renderBottomNav(){
@@ -1020,6 +1063,7 @@ async function bootApp(){
   }catch(e){}
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
   buildSidebar();loadBottomNavPref();showPage('dashboard');
+  setTimeout(()=>mostrarModalNavPref(session.nome||''),800);
   if(_notifAtivo())iniciarVerificacaoAutomatica();
   if(session.role==='admin')verificarRenovacoesPendentes();
 }
@@ -2864,23 +2908,7 @@ function renderPerfil(){
       </div>
     </div>
 
-    <!-- PREFERÊNCIAS DO APP -->
-    <div class="card" style="margin-top:1.25rem;max-width:800px">
-      <div class="card-title">Preferências do App</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--n1)">Barra de navegação inferior</div>
-          <div style="font-size:12px;color:var(--n4);margin-top:2px">Substitui o menu lateral por barra no rodapé (ideal para mobile)</div>
-        </div>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <div id="bottom-nav-toggle" onclick="toggleBottomNav()"
-            style="width:44px;height:24px;border-radius:999px;background:${localStorage.getItem('ep_bottom_nav')==='1'?'#EA580C':'#D1D5DB'};position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
-            <div id="bottom-nav-knob" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${localStorage.getItem('ep_bottom_nav')==='1'?'22':'2'}px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
-          </div>
-          <span id="bottom-nav-lbl" style="font-size:13px;font-weight:600;color:var(--n4)">${localStorage.getItem('ep_bottom_nav')==='1'?'Ativo':'Inativo'}</span>
-        </label>
-      </div>
-    </div>`;
+    `;
 }
 
 function previewAvatar(input){
@@ -4001,14 +4029,13 @@ function printFicha(tomId){
 .bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.35rem .5rem;background:none;border:none;cursor:pointer;font-size:10px;font-weight:600;color:var(--n4);min-width:52px;border-radius:var(--rs);transition:color .15s}
 .bnav-item.active{color:var(--grn)}
 .bnav-item svg{width:20px;height:20px;stroke:currentColor}
+/* Barra inferior — controlada por preferência do usuário */
 body.bottom-nav-mode .sidebar{display:none!important}
+body.bottom-nav-mode #bottom-nav{display:flex!important}
 body.bottom-nav-mode .app-body{min-height:calc(100vh - 56px - 60px)}
-body.bottom-nav-mode .content{padding-bottom:80px}
-body.bottom-nav-mode #bottom-nav{display:block!important}
-@media(min-width:769px){
-  body.bottom-nav-mode .sidebar{display:flex!important}
-  body.bottom-nav-mode #bottom-nav{display:none!important}
-}
+body.bottom-nav-mode .content{padding-bottom:80px!important}
+body.bottom-nav-mode .hamburger{display:none!important}
+#bottom-nav{display:none}
 
 /* ── MOBILE TABLE COLUMNS ───────────────────────────────────── */
 @media(max-width:640px){
