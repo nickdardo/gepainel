@@ -909,14 +909,23 @@ function renderDashboard(){
           const tom=tomadores.find(t=>t.id===e.tomador_id);
           const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
           const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
+          const atCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
+          const tipo=e.tipo||'juros';
+          const isConsig=tipo==='consignado';
+          const cor=isConsig?'var(--blu)':'var(--grn)';
+          let statusTxt='';
+          if(parcsEmp.length===0){statusTxt=isConsig?'Sem parcelas':'Sem juros';}
+          else if(atCnt>0){statusTxt=`⚠️ ${atCnt} em atraso`;}
+          else if(isConsig){statusTxt=`${pgCnt}/${parcsEmp.length} pagas`;}
+          else{statusTxt=`${pgCnt} pago${pgCnt!==1?'s':''}`;}
           return`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #F3F4F6">
             <div>
               <div style="font-size:13px;font-weight:600;cursor:pointer;color:var(--n1)" onclick="openClientView('${tom?.id}')">${tom?.nome||'—'} <span style="font-size:11px;color:var(--grn)">→</span></div>
               <div style="font-size:11px;color:var(--n4)">${fmtDate(e.data_emprestimo)} · ${fmtR(e.valor)}</div>
             </div>
             <div style="text-align:right">
-              <div style="font-size:12px;color:var(--grn);font-weight:600">${pgCnt}/${parcsEmp.length} pagas</div>
-              <div style="font-size:11px;color:var(--n4)">${(e.juros*100).toFixed(0)}% juros</div>
+              <div style="font-size:12px;color:${atCnt?'var(--red)':cor};font-weight:600">${statusTxt}</div>
+              <div style="font-size:11px;color:${isConsig?'#2563EB':'var(--grn)'};font-weight:600">${isConsig?'📋 Consignado':'💰 Juros'}</div>
             </div>
           </div>`;
         }).join('')||'<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum empréstimo ainda.</div></div>'}
