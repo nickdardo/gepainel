@@ -697,7 +697,7 @@ const ini=n=>(n||'?').split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
 const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const today=()=>new Date().toISOString().split('T')[0];
 const fmtR=v=>v!=null?'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
-const can=p=>{if(!session)return false;if(session.role==='admin')return true;return['dashboard','emprestimos','tomadores','simulador','perfil'].includes(p);};
+const can=p=>{if(!session)return false;if(session.role==='admin')return true;return['dashboard','emprestimos','tomadores','simulador','perfil','relatorio'].includes(p);};
 const AV_STYLE={admin:'background:#FDE68A;color:#78350F',op:'background:#FFF7ED;color:#EA580C'};
 const isAtrasada=v=>v&&v.status==='pendente'&&new Date(v.vencimento+'T12:00:00')<new Date();
 
