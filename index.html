@@ -854,7 +854,11 @@ function renderBottomNav(){
     <button class="bnav-item${curPage===t.id?' active':''}" onclick="showPage('${t.id}')" id="bnav-${t.id}">
       ${LUCIDE_ICONS[t.icon]||''}
       <span>${t.label}</span>
-    </button>`).join('');
+    </button>`).join('')+`
+    <button class="bnav-item" onclick="doLogout()" title="Sair">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Sair</span>
+    </button>`;
 }
 
 
@@ -1281,7 +1285,12 @@ function renderDashboard(){
   const toms   = uid ? tomadores.filter(t=>t.owner_id===uid) : tomadores;
   const userAtivo = uid ? users.find(u=>u.id===uid) : null;
 
-  const totalEmp   = emps.reduce((s,e)=>s+Number(e.valor||0),0);
+  // Só soma empréstimos com saldo em aberto (exclui quitados)
+  const empsAtivos = emps.filter(e=>{
+    const ep=parcelas.filter(p=>p.emprestimo_id===e.id);
+    return ep.length===0||ep.some(p=>p.status==='pendente');
+  });
+  const totalEmp = empsAtivos.reduce((s,e)=>s+Number(e.saldo_devedor!=null?e.saldo_devedor:e.valor||0),0);
   const totalLucro = emps.reduce((s,e)=>s+Number(e.lucro||0),0);
   const pRecebido  = parcs.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor||0),0);
   const pPendente  = parcs.filter(p=>p.status==='pendente').reduce((s,p)=>s+Number(p.valor||0),0);
@@ -1308,7 +1317,7 @@ function renderDashboard(){
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-value" style="color:var(--blu)">${fmtR(totalEmp)}</div><div class="stat-sub">${emps.length} empréstimo${emps.length!==1?'s':''}</div></div>
+      <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-value" style="color:var(--blu)">${fmtR(totalEmp)}</div><div class="stat-sub">${empsAtivos.length} em aberto</div></div>
       <div class="stat"><div class="stat-label">Lucro Esperado</div><div class="stat-value" style="color:var(--grn)">${fmtR(totalLucro)}</div><div class="stat-sub">em juros</div></div>
       <div class="stat"><div class="stat-label">Recebido</div><div class="stat-value" style="color:var(--grn)">${fmtR(pRecebido)}</div><div class="stat-sub">em parcelas pagas</div></div>
       <div class="stat"><div class="stat-label">Próximas Parcelas</div><div class="stat-value" style="color:var(--amb)">${fmtR(pPendente)}</div><div class="stat-sub">${parcs.filter(p=>p.status==='pendente').length} parcelas</div></div>
@@ -1809,9 +1818,10 @@ function _empRow(e,i){
         })()}
       </td>
       <td>
-        <div style="display:flex;gap:.3rem">
+        <div style="display:flex;gap:.3rem;align-items:center">
+          ${!allPago?`<button class="btn btn-xs" style="background:rgba(0,200,150,.15);border:1px solid var(--grn);color:var(--grn);font-size:10px;font-weight:700;padding:.2rem .5rem;border-radius:var(--rs)" onclick="abrirQuitacao('${e.id}')" title="Quitar empréstimo">Quitar</button>`:''}
           <button class="btn btn-xs btn-g" onclick="openEmpModal('${e.id}')" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          ${session.role==='admin'?'<button class="btn btn-xs btn-d" onclick="deleteEmp(\''+e.id+'\')"  >✕</button>':''}
+          ${session.role==='admin'?'<button class="btn btn-xs btn-d" onclick="deleteEmp(\''+e.id+'\')">✕</button>':''}
         </div>
       </td>
     </tr>`;
@@ -2139,6 +2149,73 @@ async function addParcela(empId){
   if(error){toast('Erro ao adicionar parcela',true);return;}
   parcelas.push(data);toast('✓ Parcela adicionada!');
   openParcelas(empId);
+}
+
+
+async function abrirQuitacao(empId){
+  const emp=emprestimos.find(e=>e.id===empId);
+  if(!emp)return;
+  const tom=tomadores.find(t=>t.id===emp.tomador_id);
+  const parcsEmp=parcelas.filter(p=>p.emprestimo_id===empId&&p.status==='pendente');
+  const saldoAtual=parseFloat((emp.saldo_devedor!=null?emp.saldo_devedor:emp.valor).toFixed(2));
+  const jurosTotal=parcsEmp.reduce((s,p)=>s+Number(p.valor||0),0);
+  const totalQuitacao=parseFloat((saldoAtual+jurosTotal).toFixed(2));
+
+  const div=document.createElement('div');
+  div.id='quitar-modal-'+empId;
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem';
+  div.onclick=e=>{if(e.target===div)div.remove();};
+  div.innerHTML=`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;max-width:400px;width:100%;box-shadow:var(--shm)">
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:2.5rem;margin-bottom:.5rem">💳</div>
+      <div style="font-family:var(--FT);font-size:1.2rem;color:var(--n1);margin-bottom:.35rem">Quitar Empréstimo</div>
+      <div style="font-size:13px;color:var(--n3)">Confirmar quitação total da dívida de <strong style="color:var(--n1)">${tom?.nome||'—'}</strong>?</div>
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-bottom:1.25rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:13px">
+        <span style="color:var(--n3)">Saldo devedor</span>
+        <span style="font-weight:600;color:var(--red)">${fmtR(saldoAtual)}</span>
+      </div>
+      ${jurosTotal>0?`<div style="display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:13px">
+        <span style="color:var(--n3)">Juros pendentes (${parcsEmp.length} parcela${parcsEmp.length!==1?'s':''})</span>
+        <span style="font-weight:600;color:var(--amb)">${fmtR(jurosTotal)}</span>
+      </div>`:''}
+      <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px">
+        <span style="font-weight:700;color:var(--n1)">Total a quitar</span>
+        <span style="font-weight:800;color:var(--grn);font-size:1.1rem">${fmtR(totalQuitacao)}</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--n4);margin-bottom:1rem;text-align:center">
+      ⚠ Esta ação marcará todas as parcelas como pagas e zerará o saldo devedor.
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-g btn-sm" style="flex:1" onclick="document.getElementById('quitar-modal-${empId}').remove()">Cancelar</button>
+      <button class="btn btn-sm" style="flex:1;background:var(--grn);color:#0D0B1E;font-weight:700" onclick="confirmarQuitacao('${empId}')">✓ Confirmar Quitação</button>
+    </div>
+  </div>`;
+  document.body.appendChild(div);
+}
+
+async function confirmarQuitacao(empId){
+  const emp=emprestimos.find(e=>e.id===empId);
+  if(!emp)return;
+  const parcsEmp=parcelas.filter(p=>p.emprestimo_id===empId&&p.status==='pendente');
+  const hoje=today();
+
+  // Marca todas parcelas pendentes como pagas
+  for(const p of parcsEmp){
+    await sb.from('parcelas').update({status:'pago',pago_em:hoje,valor_pago:p.valor}).eq('id',p.id);
+    parcelas=parcelas.map(x=>x.id===p.id?{...x,status:'pago',pago_em:hoje,valor_pago:p.valor}:x);
+  }
+  // Zera saldo devedor
+  await sb.from('emprestimos').update({saldo_devedor:0}).eq('id',empId);
+  emprestimos=emprestimos.map(e=>e.id===empId?{...e,saldo_devedor:0}:e);
+
+  document.getElementById('quitar-modal-'+empId)?.remove();
+  toast('✅ Empréstimo quitado com sucesso!');
+  renderEmprestimos();
+  if(curPage==='dashboard')renderDashboard();
 }
 
 async function deleteEmp(id){
@@ -3982,7 +4059,7 @@ function renderRelatorio(){
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Ranking — Maiores Saldos Devedores</div>
       ${tomRank.map((t,i)=>{
-        const pct=saldoTotal>0?Math.round(t.saldo/saldoTotal*100):0;
+        const pct=saldoTotalPeriodo>0?Math.round(t.saldo/saldoTotalPeriodo*100):0;
         return`<div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid #F3F4F6">
           <span style="font-size:12px;color:var(--n4);min-width:18px;font-weight:700">${i+1}</span>
           <div style="flex:1;min-width:0">
