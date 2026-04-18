@@ -2018,7 +2018,19 @@ async function saveEmp(){
         if(!pe&&ps)parcelas.push(...ps);
         toast('✓ Empréstimo registrado! '+nparc+' parcela'+(nparc!==1?'s':'')+' gerada'+(nparc!==1?'s':'')+'.');
       } else {
-        toast('✓ Empréstimo registrado! Juros mensais ilimitados.');
+        // Juros ilimitado: gera automaticamente a primeira parcela (vence em 30 dias)
+        const valorParcAuto=parseFloat((valor*juros).toFixed(2));
+        const dataBaseAuto=new Date(data+'T12:00:00');
+        const vencAuto=new Date(dataBaseAuto.getTime()+30*24*60*60*1000);
+        const vencStrAuto=vencAuto.toISOString().split('T')[0];
+        const{data:pa,error:pe}=await sb.from('parcelas').insert({
+          emprestimo_id:d.id,numero:1,
+          vencimento:vencStrAuto,
+          valor:valorParcAuto,
+          status:'pendente'
+        }).select().single();
+        if(!pe&&pa)parcelas.push(pa);
+        toast('✓ Empréstimo registrado! 1ª parcela de juros: '+fmtR(valorParcAuto)+' vence em '+fmtDate(vencStrAuto));
       }
     }
     closeM('emp-modal');
@@ -4182,7 +4194,7 @@ function toggleDarkMode(){
   document.body.classList.toggle('dark', next==='dark');
   // Forçar cores do body explicitamente
   if(next==='light'){
-    document.body.style.background='#F1F5F9';
+    document.body.style.background='#F0FDF4';
     document.body.style.color='#111827';
   } else {
     document.body.style.background='#0D0B1E';
@@ -4207,7 +4219,7 @@ function loadDarkMode(){
     document.documentElement.setAttribute('data-theme', isLight?'light':'dark');
     document.body.classList.toggle('dark', !isLight);
     if(isLight){
-      document.body.style.background='#F1F5F9';
+      document.body.style.background='#F0FDF4';
       document.body.style.color='#111827';
     } else {
       document.body.style.background='#0D0B1E';
