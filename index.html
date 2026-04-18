@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>AGPainel</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111827'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='%23F97316'>$</text></svg>"/>
+<title>GEPainel</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230D0B1E'/><text x='16' y='22' font-size='16' font-weight='bold' text-anchor='middle' fill='%2300C896'>GE</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -12,46 +12,47 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F0FDF4;--card:#fff;--border:#D1FAE5;--border2:#A7F3D0;
-  --n1:#111827;--n2:#374151;--n3:#6B7280;--n4:#9CA3AF;
-  --grn:#EA580C;--grn0:#FFF7ED;--grn1:#FED7AA;--grn2:#F97316;
-  --red:#DC2626;--red0:#FEF2F2;--red1:#FECACA;
-  --amb:#D97706;--amb0:#FFFBEB;--amb1:#FDE68A;
-  --blu:#2563EB;--blu0:#EFF6FF;
-  --blk:#111827;--blk2:#1F2937;--blk3:#374151;
+  --bg:#0D0B1E;--card:#1A1730;--card2:#231E3D;--border:#2D2650;--border2:#3D3470;
+  --n1:#F0EFFF;--n2:#C4C0E8;--n3:#8B87B8;--n4:#5C5880;
+  --grn:#00C896;--grn0:rgba(0,200,150,.12);--grn1:rgba(0,200,150,.25);--grn2:#00A37A;
+  --red:#FF4D6A;--red0:rgba(255,77,106,.12);--red1:rgba(255,77,106,.25);
+  --amb:#F59E0B;--amb0:rgba(245,158,11,.12);--amb1:rgba(245,158,11,.25);
+  --blu:#7C3AED;--blu0:rgba(124,58,237,.15);--blu1:rgba(124,58,237,.3);
+  --pur:#9B59B6;--pur0:rgba(155,89,182,.15);
+  --blk:#0D0B1E;--blk2:#1A1730;--blk3:#231E3D;
   --FT:'DM Serif Display',serif;--FB:'DM Sans',sans-serif;
-  --r:12px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.08);--shm:0 8px 30px rgba(0,0,0,.15);
+  --r:14px;--rs:10px;--sh:0 2px 8px rgba(0,0,0,.3);--shm:0 12px 40px rgba(0,0,0,.5);
 }
 body{font-family:var(--FB);background:var(--bg);color:var(--n1);min-height:100vh;font-size:15px}
 
 /* LOGIN */
-.login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#431407 0%,#111827 60%,#431407 100%);padding:1rem}
-.login-card{background:#fff;border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.login-logo{font-family:var(--FT);font-size:2.2rem;color:#111827;margin-bottom:.2rem;line-height:1}
-.login-logo span{color:#EA580C}
+.login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#2D1B69 0%,#0D0B1E 50%,#0A1628 100%);padding:1rem}
+.login-card{background:#1A1730;border:1px solid #2D2650;border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.login-logo{font-family:var(--FT);font-size:2.2rem;color:#F0EFFF;margin-bottom:.2rem;line-height:1}
+.login-logo span{color:#00C896}
 .login-sub{font-size:13px;color:var(--n3);margin-bottom:2rem}
 .login-field{margin-bottom:1rem}
 .login-field label{display:block;font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
 .login-field input{
   width:100%;padding:.75rem 1rem;
-  border:1.5px solid #E5E7EB;border-radius:var(--rs);
+  border:1.5px solid #2D2650;border-radius:var(--rs);
   font-family:var(--FB);font-size:16px;
-  color:#111827 !important;background:#F9FAFB !important;
+  color:#F0EFFF !important;background:#231E3D !important;
   outline:none;transition:border-color .15s;
-  -webkit-text-fill-color:#111827 !important;
-  caret-color:#111827;
+  -webkit-text-fill-color:#F0EFFF !important;
+  caret-color:#00C896;
 }
-.login-field input:focus{border-color:#EA580C;background:#fff !important}
+.login-field input:focus{border-color:#00C896 !important;box-shadow:0 0 0 3px rgba(0,200,150,.15) !important}
 /* Fix Android autofill dark background */
 .login-field input:-webkit-autofill,
 .login-field input:-webkit-autofill:hover,
 .login-field input:-webkit-autofill:focus{
-  -webkit-box-shadow:0 0 0 1000px #F9FAFB inset !important;
-  -webkit-text-fill-color:#111827 !important;
-  border-color:#E5E7EB;
+  -webkit-box-shadow:0 0 0 1000px #231E3D inset !important;
+  -webkit-text-fill-color:#F0EFFF !important;
+  border-color:#2D2650;
   transition:background-color 9999s ease-in-out 0s;
 }
-.login-error{background:#FEF2F2;color:#DC2626;font-size:13px;padding:.65rem .85rem;border-radius:var(--rs);margin-bottom:1rem;display:none;border-left:3px solid #DC2626;font-weight:500}
+.login-error{background:rgba(255,77,106,.1);color:#FF4D6A;font-size:13px;padding:.65rem .85rem;border-radius:var(--rs);margin-bottom:1rem;display:none;border-left:3px solid #DC2626;font-weight:500}
 .login-hint{font-size:11px;color:var(--n4);text-align:center;margin-top:1rem}
 @media(max-width:480px){
   .login-card{padding:2rem 1.5rem;border-radius:16px}
@@ -60,9 +61,9 @@ body{font-family:var(--FB);background:var(--bg);color:var(--n1);min-height:100vh
 
 /* NAV */
 .nav{background:var(--blk);border-bottom:1px solid var(--blk2);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
-.nav-brand{font-family:var(--FT);font-size:1.3rem;color:#fff}
-.nav-brand span{color:#F97316}
-.nav-brand .ag{color:#fff}
+.nav-brand{font-family:var(--FT);font-size:1.3rem;color:#F0EFFF}
+.nav-brand span{color:#00C896}
+.nav-brand .ge{color:#F0EFFF}
 .nav-right{display:flex;align-items:center;gap:.75rem}
 .nav-user{font-size:13px;color:#9CA3AF;display:flex;align-items:center;gap:8px}
 .nav-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
@@ -81,16 +82,16 @@ body{font-family:var(--FB);background:var(--bg);color:var(--n1);min-height:100vh
 .app-body{display:flex;min-height:calc(100vh - 56px)}
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
 .sb-overlay.open{display:block}
-.sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid #E5E7EB;padding:1rem 0;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;transition:left .25s}
-.sidebar-section{padding:0 1rem .4rem;font-size:10px;font-weight:700;color:var(--n4);letter-spacing:.08em;text-transform:uppercase;margin-top:.5rem}
-.sidebar-item{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:var(--FB);font-size:14px;color:var(--n3);border-right:3px solid transparent;transition:all .12s}
-.sidebar-item:hover{background:#FFF7ED;color:var(--n1)}
-.sidebar-item.active{background:#FFF7ED;color:var(--grn);font-weight:600;border-right-color:var(--grn)}
+.sidebar{width:220px;min-width:220px;background:#120F2D;border-right:1px solid #2D2650;padding:1rem 0;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;transition:left .25s}
+.sidebar-section{padding:0 1rem .4rem;font-size:10px;font-weight:700;color:#3D3470;letter-spacing:.08em;text-transform:uppercase;margin-top:.5rem}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:var(--FB);font-size:14px;color:var(--n3);border-right:3px solid transparent;transition:all .12s;border-radius:var(--rs) 0 0 var(--rs);margin:1px 0}
+.sidebar-item:hover{background:rgba(0,200,150,.08);color:var(--n1)}
+.sidebar-item.active{background:rgba(0,200,150,.12);color:var(--grn);font-weight:600;border-right-color:var(--grn)}
 .sidebar-icon{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .sidebar-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;transition:stroke .12s}
 .sidebar-item:hover svg{stroke:var(--n1)}
 .sidebar-item.active svg{stroke:var(--grn)}
-.sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid #E5E7EB;font-size:11px;color:var(--n4);line-height:1.6}
+.sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid #2D2650;font-size:11px;color:var(--n4);line-height:1.6}
 .content{flex:1;padding:1.5rem;min-width:0}
 
 /* STATS */
@@ -140,10 +141,10 @@ select option{background:#fff;color:var(--n1)}
 .bdg-atras{background:var(--red0);color:var(--red)}
 
 /* TABLE */
-.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid #E5E7EB}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{padding:.7rem 1rem;text-align:left;font-size:10px;font-weight:700;color:var(--n4);text-transform:uppercase;letter-spacing:.06em;background:#F9FAFB;border-bottom:1px solid #E5E7EB;white-space:nowrap}
-tbody tr{border-bottom:1px solid #F3F4F6;transition:background .1s}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:#FFF7ED}
 tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
@@ -236,7 +237,7 @@ body.dark .sidebar-footer{border-color:#1E293B}
 body.dark .sidebar-item:hover{background:#1E293B}
 body.dark .sidebar-item.active{background:#1E293B}
 body.dark .card,.dark .stat,.dark .modal{background:#1E293B!important;border-color:#334155!important}
-body.dark input,body.dark select,body.dark textarea{background:#1E293B;border-color:#475569;color:#F1F5F9}
+body.dark input,body.dark select,body.dark textarea{background:#231E3D;border-color:#2D2650;color:#F0EFFF}
 body.dark input:focus,body.dark select:focus,body.dark textarea:focus{border-color:#EA580C!important;outline:none;box-shadow:0 0 0 2px rgba(234,88,12,.25)!important}
 body.dark select option{background:#1E293B;color:#F1F5F9}
 body.dark select:focus{border-color:#EA580C}
@@ -444,11 +445,11 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
   <div class="login-bg">
     <div class="login-card">
       <div id="login-panel">
-        <div class="login-logo"><span style="color:#111827">GE</span><span>Painel</span></div>
+        <div class="login-logo"><span style="color:#F0EFFF">GE</span><span style="color:#00C896">Painel</span></div>
         <div class="login-sub">Gestão de Empréstimos</div>
         <div class="login-error" id="login-error"></div>
         <div class="login-field"><label>Usuário</label><input type="text" id="lu" placeholder="seu.usuario" autocomplete="username" inputmode="text" onkeydown="if(event.key==='Enter')doLogin()" style="font-size:16px"/></div>
-        <div class="login-field"><label>Senha</label><input type="password" id="lp" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="font-size:16px"/></div>
+        <div class="login-field"><label>Senha</label><div style="position:relative"><input type="password" id="lp" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="font-size:16px;padding-right:2.75rem"/><button type="button" onclick="togglePwd('lp',this)" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--n3);padding:0;display:flex;align-items:center" title="Mostrar senha"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
             <div id="remember-toggle" onclick="toggleRemember()" style="width:40px;height:22px;border-radius:999px;background:#D1D5DB;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
@@ -475,7 +476,8 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
         <div class="login-field"><label>Usuário *</label><input type="text" id="reg-login" placeholder="Ex: joao.silva" onkeydown="if(event.key==='Enter')doRegister()"/></div>
         <div class="login-field"><label>Senha *</label><input type="password" id="reg-pass" placeholder="Mínimo 4 caracteres" onkeydown="if(event.key==='Enter')doRegister()"/></div>
         <div class="login-field"><label>Confirmar senha *</label><input type="password" id="reg-pass2" placeholder="Repita a senha" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-        <button onclick="doRegister()" id="register-btn" class="btn btn-grn btn-full" style="background:#EA580C">Criar conta →</button>
+        <div class="login-field" style="margin-bottom:.5rem"><label>Código de indicação (opcional)</label><input type="text" id="reg-indicacao" placeholder="Ex: GEA1B2C3" style="text-transform:uppercase"/></div>
+        <button onclick="doRegister()" id="register-btn" class="btn btn-grn btn-full" style="background:#00C896;color:#0D0B1E">Criar conta →</button>
         <button onclick="showLogin()" style="margin-top:.75rem;width:100%;padding:.6rem;background:transparent;color:var(--n4);border:none;font-family:var(--FB);font-size:13px;cursor:pointer">← Voltar para o login</button>
       </div>
     </div>
@@ -488,7 +490,7 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
   <nav class="nav">
     <div style="display:flex;align-items:center;gap:.75rem">
       <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
-      <span class="nav-brand"><span class="ag">AG</span><span>Painel</span></span>
+      <span class="nav-brand"><span class="ge">GE</span><span>Painel</span></span>
     </div>
     <div class="nav-right">
       <div class="nav-user">
@@ -595,6 +597,31 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
         </button>
         <button class="btn btn-g btn-sm" style="width:100%;margin-top:.4rem" onclick="document.getElementById('renov-qr').style.display='none';document.getElementById('renov-planos').style.display=''">← Voltar aos planos</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL INDICAÇÃO -->
+<div id="indicacao-modal" style="display:none" onclick="if(event.target===this)closeM('indicacao-modal')" class="mbd">
+  <div class="modal" style="max-width:400px">
+    <div class="mhdr"><span class="mtitle">🎁 Indicar Amigo</span><button class="mclose" onclick="closeM('indicacao-modal')">✕</button></div>
+    <div class="mbody">
+      <div style="text-align:center;margin-bottom:1.25rem">
+        <div style="font-size:2.5rem;margin-bottom:.5rem">🤝</div>
+        <div style="font-family:var(--FT);font-size:1.1rem;color:var(--n1);margin-bottom:.35rem">Indique e ganhe 1 mês grátis!</div>
+        <div style="font-size:13px;color:var(--n3)">Seu amigo se cadastra com seu código e você ganha <strong style="color:var(--grn)">30 dias grátis</strong>.</div>
+      </div>
+      <div style="background:rgba(0,200,150,.08);border:1px solid rgba(0,200,150,.25);border-radius:var(--rs);padding:1rem;margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;color:var(--grn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Seu código</div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <div id="cod-indicacao" style="flex:1;font-family:monospace;font-size:1.2rem;font-weight:700;color:var(--grn);letter-spacing:2px"></div>
+          <button class="btn btn-g btn-sm" onclick="copiarCodigoIndicacao()">Copiar</button>
+        </div>
+      </div>
+      <div id="indicacao-status" style="margin-bottom:1rem"></div>
+      <button class="btn btn-grn btn-full" onclick="compartilharIndicacao()" style="margin-bottom:.5rem">💬 Compartilhar via WhatsApp</button>
+      <div style="font-size:11px;color:var(--n4);text-align:center">Válido apenas uma vez por usuário.</div>
     </div>
   </div>
 </div>
@@ -830,6 +857,82 @@ function renderBottomNav(){
     </button>`).join('');
 }
 
+
+// ══ CALCULADORA ══
+let _calcVal='0',_calcOp=null,_calcPrev=null,_calcNewNum=true;
+function calcRenderBtns(){
+  const g=document.getElementById('calc-btns');if(!g||g.children.length>0)return;
+  const keys=['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.',',','='];
+  keys.forEach(k=>{
+    const isOp=['÷','×','−','+','='].includes(k),isClear=k==='C';
+    const bg=isOp?'rgba(0,200,150,.2)':isClear?'rgba(255,77,106,.2)':'#231E3D';
+    const color=isOp?'var(--grn)':isClear?'var(--red)':'var(--n1)';
+    const btn=document.createElement('button');
+    if(k==='0')btn.style.gridColumn='span 2';
+    btn.style.cssText='padding:.6rem;background:'+bg+';border:1px solid #2D2650;border-radius:var(--rs);cursor:pointer;color:'+color+';font-size:13px;font-weight:700;transition:all .1s';
+    btn.textContent=k;
+    btn.onclick=()=>calcPress(k);
+    btn.onmouseover=()=>btn.style.opacity='.8';
+    btn.onmouseout=()=>btn.style.opacity='1';
+    g.appendChild(btn);
+  });
+}
+function toggleCalcSidebar(){const c=document.getElementById('calc-popup');const cal=document.getElementById('cal-popup');if(cal)cal.style.display='none';if(c){c.style.display=c.style.display==='none'?'block':'none';if(c.style.display==='block')calcRenderBtns();}}
+function toggleCalSidebar(){const c=document.getElementById('cal-popup');const calc=document.getElementById('calc-popup');if(calc)calc.style.display='none';if(c){c.style.display=c.style.display==='none'?'block':'none';if(c.style.display==='block')renderCal();}}
+function calcPress(k){
+  const disp=document.getElementById('calc-display');const expr=document.getElementById('calc-expr');if(!disp)return;
+  if(k==='C'){_calcVal='0';_calcOp=null;_calcPrev=null;_calcNewNum=true;if(expr)expr.textContent='';}
+  else if(k==='±'){_calcVal=String(-parseFloat(_calcVal||0));}
+  else if(k==='%'){_calcVal=String(parseFloat(_calcVal||0)/100);}
+  else if(['÷','×','−','+'].includes(k)){_calcPrev=parseFloat(_calcVal);_calcOp=k;_calcNewNum=true;if(expr)expr.textContent=_calcVal+' '+k;}
+  else if(k==='='){
+    if(_calcOp&&_calcPrev!==null){const b=parseFloat(_calcVal);let r;if(_calcOp==='÷')r=_calcPrev/b;else if(_calcOp==='×')r=_calcPrev*b;else if(_calcOp==='−')r=_calcPrev-b;else r=_calcPrev+b;
+    if(expr)expr.textContent=_calcPrev+' '+_calcOp+' '+b+' =';_calcVal=String(parseFloat(r.toFixed(10)));_calcOp=null;_calcPrev=null;_calcNewNum=true;}
+  }
+  else if(k===','||k==='.'){if(_calcNewNum){_calcVal='0.';_calcNewNum=false;}else if(!_calcVal.includes('.'))_calcVal+='.';}
+  else{if(_calcNewNum){_calcVal=k;_calcNewNum=false;}else _calcVal=_calcVal==='0'?k:_calcVal+k;}
+  const n=parseFloat(_calcVal);disp.textContent=isNaN(n)?_calcVal:n.toLocaleString('pt-BR',{maximumFractionDigits:10});
+}
+// ══ CALENDÁRIO ══
+let _calY=new Date().getFullYear(),_calM=new Date().getMonth();
+function calNav(d){_calM+=d;if(_calM>11){_calM=0;_calY++;}else if(_calM<0){_calM=11;_calY--;}renderCal();}
+function renderCal(){
+  const t=document.getElementById('cal-title');const g=document.getElementById('cal-grid');if(!t||!g)return;
+  const mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];t.textContent=mn[_calM]+' '+_calY;
+  const hoje=new Date();const pD=new Date(_calY,_calM,1).getDay();const dM=new Date(_calY,_calM+1,0).getDate();
+  let html=['D','S','T','Q','Q','S','S'].map(d=>`<div style="font-size:9px;font-weight:700;color:var(--n4);padding:2px">${d}</div>`).join('');
+  for(let i=0;i<pD;i++)html+=`<div></div>`;
+  for(let d=1;d<=dM;d++){const isH=d===hoje.getDate()&&_calM===hoje.getMonth()&&_calY===hoje.getFullYear();html+=`<div style="font-size:11px;padding:3px;border-radius:50%;cursor:default;text-align:center;${isH?'background:var(--grn);color:#0D0B1E;font-weight:700;':'color:var(--n2);'}">${d}</div>`;}
+  g.innerHTML=html;
+}
+
+
+// ══ INDICAÇÃO ══
+function gerarCodigoIndicacao(userId){return 'GE'+userId.substring(0,6).toUpperCase();}
+function abrirIndicacao(){
+  const cod=gerarCodigoIndicacao(session.id);
+  const el=document.getElementById('cod-indicacao');if(el)el.textContent=cod;
+  const st=document.getElementById('indicacao-status');
+  if(st){const usou=localStorage.getItem('ep_bonus_indicacao_usado');
+    st.innerHTML=usou?'<div style="background:rgba(0,200,150,.08);border:1px solid rgba(0,200,150,.2);border-radius:var(--rs);padding:.65rem;font-size:12px;color:var(--grn)">✓ Bônus de indicação já utilizado.</div>':'<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:.65rem;font-size:12px;color:var(--amb)">⏳ Aguardando seu primeiro indicado.</div>';
+  }
+  openM('indicacao-modal');
+}
+function copiarCodigoIndicacao(){const cod=gerarCodigoIndicacao(session.id);navigator.clipboard.writeText(cod).then(()=>toast('✓ Código copiado!')).catch(()=>toast('Código: '+cod));}
+function compartilharIndicacao(){const cod=gerarCodigoIndicacao(session.id);const url='https://emprestimo-teal.vercel.app';const msg=`Olá! Estou usando o *GEPainel* para gerenciar empréstimos! 🚀%0A%0ACadastre-se com meu código e ganhe 30 dias grátis:%0A*Código:* ${cod}%0A*Link:* ${url}`;window.open('https://wa.me/?text='+msg,'_blank');}
+async function verificarCodigoIndicacao(cod){
+  if(!cod||cod.length<8)return;
+  const{data:allUsers}=await sb.from('users').select('id,nome').limit(200);
+  if(!allUsers)return;
+  const indicador=allUsers.find(u=>gerarCodigoIndicacao(u.id)===cod&&u.id!==session.id);
+  if(!indicador)return;
+  const jaUsou=localStorage.getItem('ep_bonus_dado_'+indicador.id);if(jaUsou)return;
+  const base=new Date();base.setDate(base.getDate()+30);
+  await sb.from('users').update({expires_at:base.toISOString().split('T')[0]}).eq('id',indicador.id);
+  localStorage.setItem('ep_bonus_dado_'+indicador.id,'1');
+  toast('🎁 Código válido! Seu amigo ganhou 30 dias extras!');
+}
+
 // ══ SIDEBAR ══
 function toggleSidebar(){document.getElementById('sidebarEl').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('open');}
 function closeSidebar(){document.getElementById('sidebarEl').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open');}
@@ -868,7 +971,32 @@ function buildSidebar(){
       </button>
     </div>`+
     `<div style="border-top:1px solid #374151;margin:.75rem .75rem 0"></div>`+
-    `<div class="sidebar-footer">AGPainel v1.0<br><span style="color:var(--n4)">Desenvolvido por Eduardo Ribeiro</span></div>`
+    `<div style="padding:.5rem .75rem">
+      <div style="display:flex;gap:.4rem;margin-bottom:.5rem">
+        <button onclick="toggleCalcSidebar()" style="flex:1;padding:.5rem;background:#231E3D;border:1px solid #2D2650;border-radius:var(--rs);cursor:pointer;color:var(--n3);display:flex;align-items:center;justify-content:center;gap:.3rem;font-size:11px;font-weight:600;transition:all .15s" onmouseover="this.style.borderColor='var(--grn)';this.style.color='var(--grn)'" onmouseout="this.style.borderColor='#2D2650';this.style.color='var(--n3)'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/></svg>
+          Calc
+        </button>
+        <button onclick="toggleCalSidebar()" style="flex:1;padding:.5rem;background:#231E3D;border:1px solid #2D2650;border-radius:var(--rs);cursor:pointer;color:var(--n3);display:flex;align-items:center;justify-content:center;gap:.3rem;font-size:11px;font-weight:600;transition:all .15s" onmouseover="this.style.borderColor='var(--grn)';this.style.color='var(--grn)'" onmouseout="this.style.borderColor='#2D2650';this.style.color='var(--n3)'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Cal
+        </button>
+      </div>
+      <div id="calc-popup" style="display:none;background:#120F2D;border:1px solid #2D2650;border-radius:var(--r);padding:.75rem;margin-bottom:.5rem">
+        <div id="calc-display" style="background:#0D0B1E;border-radius:var(--rs);padding:.65rem .85rem;text-align:right;font-family:var(--FT);font-size:1.4rem;color:var(--grn);margin-bottom:.5rem;min-height:52px;word-break:break-all;border:1px solid #2D2650">0</div>
+        <div id="calc-expr" style="text-align:right;font-size:10px;color:var(--n4);margin-bottom:.5rem;min-height:14px"></div>
+        <div id="calc-btns" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px"></div>
+      </div>
+      <div id="cal-popup" style="display:none;background:#120F2D;border:1px solid #2D2650;border-radius:var(--r);padding:.75rem;margin-bottom:.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <button onclick="calNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--n3);padding:0;font-size:16px">‹</button>
+          <span id="cal-title" style="font-size:12px;font-weight:700;color:var(--n1)"></span>
+          <button onclick="calNav(1)" style="background:none;border:none;cursor:pointer;color:var(--n3);padding:0;font-size:16px">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center" id="cal-grid"></div>
+      </div>
+    </div>
+    <div class="sidebar-footer">GEPainel v1.0<br><span style="color:var(--n4)">Desenvolvido por Eduardo Ribeiro</span></div>`
 }
 
 function showPage(p){
@@ -882,6 +1010,31 @@ function showPage(p){
   else if(p==='perfil')renderPerfil();
   else if(p==='usuarios')renderUsuarios();
   else if(p==='relatorio')renderRelatorio();
+}
+
+
+function togglePwd(inputId, btn){
+  const inp=document.getElementById(inputId);
+  if(!inp)return;
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  const eyeOff='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  const eyeOn='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  btn.innerHTML=show?eyeOff:eyeOn;
+  btn.style.color=show?'var(--grn)':'var(--n3)';
+}
+
+
+async function sbWithRetry(fn, tentativas=3, delay=1500){
+  for(let i=0;i<tentativas;i++){
+    try{
+      const r=await Promise.race([fn(),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))]);
+      return r;
+    }catch(e){
+      if(i===tentativas-1)throw e;
+      await new Promise(r=>setTimeout(r,delay*(i+1)));
+    }
+  }
 }
 
 // ══ AUTH ══
@@ -943,7 +1096,7 @@ async function doLogin(){
       if(dias<0){showErr('⛔ Seu acesso expirou. Contate o administrador.');return;}
       if(dias<=3){
         // avisa mas permite entrar
-        setTimeout(()=>toast(`⚠ Seu acesso expira em ${dias} dia${dias!==1?'s':''}!`,true),1500);
+        setTimeout(()=>toast('⚠ Seu acesso expira em '+dias+' dia'+(dias!==1?'s':'')+'!',true),1500);
       }
     }
     // Salva ou limpa credenciais conforme toggle
@@ -980,7 +1133,9 @@ async function doRegister(){
     } else {data=res1.data;error=res1.error;}
     if(error||!data){showRegErr('Erro ao criar conta.');btn.textContent='Criar conta →';btn.disabled=false;return;}
     session=data;saveSession(session);btn.textContent='Criar conta →';btn.disabled=false;
-    await bootApp();toast(`✓ Bem-vindo(a), ${data.nome.split(' ')[0]}!`);
+    const codInd=document.getElementById('reg-indicacao')?.value.trim().toUpperCase();
+    if(codInd&&codInd.length>=8){await verificarCodigoIndicacao(codInd);}
+    await bootApp();toast('✓ Bem-vindo(a), '+data.nome.split(' ')[0]+'!');
   }catch(e){showRegErr('Erro de conexão.');btn.textContent='Criar conta →';btn.disabled=false;}
 }
 
@@ -1043,7 +1198,7 @@ async function loadAll(){
     tq=tq.eq('owner_id',session.id);
     eq=eq.eq('owner_id',session.id);
   }
-  const[tr,er,pr,ur]=await Promise.all([tq,eq,sb.from('parcelas').select('*').order('numero'),sb.from('users').select('*').order('nome')]);
+  const[tr,er,pr,ur]=await Promise.all([sbWithRetry(()=>tq),sbWithRetry(()=>eq),sbWithRetry(()=>sb.from('parcelas').select('*').order('numero')),sbWithRetry(()=>sb.from('users').select('*').order('nome'))]);
   tomadores=tr.data||[];emprestimos=er.data||[];users=ur.data||[];
   // Filtrar parcelas apenas dos empréstimos visíveis
   const empIds=new Set(emprestimos.map(e=>e.id));
@@ -1401,7 +1556,7 @@ function downloadModelo(){
     const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download='AGPainel_Modelo_Importacao.xlsx';
+    a.href=url;a.download='GEPainel_Modelo_Importacao.xlsx';
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},200);
     toast('✓ Modelo baixado!');
@@ -1431,7 +1586,7 @@ function exportExcel(){
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
-  a.download='AGPainel_'+today()+'.xlsx';
+  a.download='GEPainel_'+today()+'.xlsx';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},300);
   toast('✓ Arquivo exportado!');
@@ -1617,14 +1772,12 @@ function filterEmp(){
   const tb=document.getElementById('emp-tbody');if(tb)tb.innerHTML=empTbodyHTML(sorted);
 }
 
-function empTbodyHTML(list){
-  if(!list.length)return`<tr><td colspan="11"><div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum empréstimo.</div></div></td></tr>`;
-  return list.map((e,i)=>{
-    const tom=tomadores.find(t=>t.id===e.tomador_id);
-    const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
-    const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
-    const atCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
-    const allPago=parcsEmp.length>0&&pgCnt===parcsEmp.length;
+function _empRow(e,i){
+  const tom=tomadores.find(t=>t.id===e.tomador_id);
+  const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
+  const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
+  const atCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
+  const allPago=parcsEmp.length>0&&pgCnt===parcsEmp.length;
     return`<tr id="row-${e.id}">
       <td class="chk-cell" style="display:none;text-align:center"><input type="checkbox" class="emp-chk" value="${e.id}" onchange="onChkChange()"/></td>
       <td style="color:var(--n4);font-size:12px">${i+1}</td>
@@ -1650,7 +1803,7 @@ function empTbodyHTML(list){
           } else {
             // Consignado: mantém X/Y
             return`<button class="btn btn-xs ${allPago?'btn-grn':atCnt?'btn-d':'btn-amb'}" onclick="openParcelas('${e.id}')">
-              ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?` ⚠️${atCnt}`:''}
+              ${allPago?'✅':'💳'} ${pgCnt}/${parcsEmp.length}${atCnt?' ⚠️'+atCnt:''}
             </button>`;
           }
         })()}
@@ -1658,11 +1811,22 @@ function empTbodyHTML(list){
       <td>
         <div style="display:flex;gap:.3rem">
           <button class="btn btn-xs btn-g" onclick="openEmpModal('${e.id}')" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          ${session.role==='admin'?`<button class="btn btn-xs btn-d" onclick="deleteEmp('${e.id}')">✕</button>`:''}
+          ${session.role==='admin'?'<button class="btn btn-xs btn-d" onclick="deleteEmp(\''+e.id+'\')"  >✕</button>':''}
         </div>
       </td>
     </tr>`;
-  }).join('');
+}
+
+function empTbodyHTML(list){
+  if(!list.length)return'<tr><td colspan="11"><div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum empréstimo.</div></div></td></tr>';
+  const ativos=list.filter(e=>{const ep=parcelas.filter(p=>p.emprestimo_id===e.id);return ep.length===0||ep.some(p=>p.status==='pendente');});
+  const quitados=list.filter(e=>{const ep=parcelas.filter(p=>p.emprestimo_id===e.id);return ep.length>0&&ep.every(p=>p.status==='pago');});
+  let html=ativos.map((e,i)=>_empRow(e,i+1)).join('');
+  if(quitados.length){
+    html+='<tr><td colspan="11" style="padding:.65rem 1rem;background:rgba(0,200,150,.06);border-top:2px solid rgba(0,200,150,.3);border-bottom:1px solid rgba(0,200,150,.2)"><div style="display:flex;align-items:center;gap:.5rem"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#00C896\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg><span style=\"font-size:11px;font-weight:700;color:var(--grn);text-transform:uppercase;letter-spacing:.05em\">Quitados ('+quitados.length+')</span></div></td></tr>';
+    html+=quitados.map((e,i)=>{const row=_empRow(e,ativos.length+i+1);return row.replace('<tr id=','<tr style="opacity:.6" id=');}).join('');
+  }
+  return html||'<tr><td colspan="11"><div class="empty"><div class="empty-text">Nenhum empréstimo.</div></div></td></tr>';
 }
 
 let _empTipo='juros';
@@ -2469,7 +2633,7 @@ function exportTomadoresExcel(){
 
   const win=window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>AGPainel — Clientes</title>
+  <title>GEPainel — Clientes</title>
   <style>
     body{font-family:Arial,sans-serif;padding:2rem;color:#111;font-size:13px}
     h1{font-size:1.4rem;margin-bottom:.25rem;color:#111827}
@@ -2482,7 +2646,7 @@ function exportTomadoresExcel(){
     .footer{margin-top:2rem;font-size:11px;color:#9CA3AF;display:flex;justify-content:space-between}
     @media print{button{display:none!important}}
   </style></head><body>
-  <h1>AGPainel — Lista de Clientes</h1>
+  <h1>GEPainel — Lista de Clientes</h1>
   <div class="sub">Gerado em ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})} · ${tomadores.length} tomadores</div>
   <table>
     <thead><tr>
@@ -2500,7 +2664,7 @@ function exportTomadoresExcel(){
     </tr></tfoot>
   </table>
   <div class="footer">
-    <span>AGPainel — Sistema de Gestão de Empréstimos</span>
+    <span>GEPainel — Sistema de Gestão de Empréstimos</span>
     <span>${session?.nome||''}</span>
   </div>
   <br>
@@ -2821,7 +2985,7 @@ function renderPerfil(){
     :`<span style="font-size:2rem;font-weight:700">${ini(session.nome)}</span>`;
   const avStyle=session.avatar_url?'background:transparent':'background:#FFF7ED';
   mc.innerHTML=`
-    <div class="sec-hdr"><span class="sec-title">Meu Perfil</span></div>
+    <div class="sec-hdr"><span class="sec-title">Meu Perfil</span><button class="btn btn-grn btn-sm" onclick="abrirIndicacao()">🎁 Indicar amigo</button></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:800px" class="perfil-grid">
       <div class="card">
         <div class="card-title">Foto de Perfil</div>
@@ -3215,7 +3379,7 @@ function testarNotificacao(){
   // Botão de teste manual — dispara uma notificação de exemplo imediatamente
   if(Notification.permission!=='granted'){toast('⚠ Ative os alertas primeiro',true);return;}
   dispararNotificacao(
-    '🔔 AGPainel — Teste de alerta',
+    '🔔 GEPainel — Teste de alerta',
     'Os alertas estão funcionando! Você receberá avisos automáticos de vencimento.',
     'agpainel-teste'
   );
@@ -3399,7 +3563,7 @@ function testarMensagemWa(){
   }
 
   const nl='\n';
-  let msg='📊 *AGPainel — Avisos de Cobranças*'+nl;
+  let msg='📊 *GEPainel — Avisos de Cobranças*'+nl;
   msg+='🗓 '+new Date().toLocaleDateString('pt-BR')+nl+nl;
   if(linhasAtras.length){msg+='⛔ *Em atraso ('+linhasAtras.length+'):*'+nl+linhasAtras.join(nl)+nl+nl;}
   if(linhas3.length){msg+='🔴 *Vencem em até 3 dias ('+linhas3.length+'):*'+nl+linhas3.join(nl)+nl+nl;}
@@ -3434,7 +3598,7 @@ function enviarAvisosWa(){
   if(!linhas3.length&&!linhas7.length&&!linhasAtras.length){toast('✓ Nenhuma parcela em atraso ou vencendo nos próximos 7 dias!');return;}
 
   const nl='\n';
-  let msg='📊 *AGPainel — Avisos de Cobranças*'+nl;
+  let msg='📊 *GEPainel — Avisos de Cobranças*'+nl;
   msg+='🗓 '+new Date().toLocaleDateString('pt-BR')+nl+nl;
   if(linhasAtras.length){msg+='⛔ *Em atraso ('+linhasAtras.length+'):*'+nl+linhasAtras.join(nl)+nl+nl;}
   if(linhas3.length){msg+='🔴 *Vencem em até 3 dias ('+linhas3.length+'):*'+nl+linhas3.join(nl)+nl+nl;}
@@ -3450,12 +3614,12 @@ function exportRelatPDF(){
   const mc=document.getElementById('main-content');
   if(!mc)return;
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>AGPainel — Relatório</title>
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>GEPainel — Relatório</title>
   <style>body{font-family:Arial,sans-serif;padding:2rem;font-size:13px}h1{font-size:1.3rem;margin-bottom:1rem}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
   .card{border:1px solid #E5E7EB;border-radius:8px;padding:1rem}
   canvas{max-height:200px}@media print{button{display:none}}</style></head>
-  <body><h1>AGPainel — Relatório</h1>
+  <body><h1>GEPainel — Relatório</h1>
   ${mc.innerHTML.replace(/<script[\s\S]*?<\/script>/gi,'')}
   <br><button onclick="window.print()" style="padding:.5rem 1.5rem;background:#111827;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Salvar como PDF</button>
   </body></html>`);
@@ -3495,7 +3659,7 @@ function exportRelatCSV(){
   const csv=rows.map(r=>r.map(csvEsc).join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='AGPainel_Relatorio_'+today()+'.csv';
+  const a=document.createElement('a');a.href=url;a.download='GEPainel_Relatorio_'+today()+'.csv';
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},300);
   toast('✓ CSV exportado!');
 }
@@ -3528,7 +3692,7 @@ function _pixField(id,value){
 }
 
 function gerarPixEMV(chave,nome,cidade,valor,txid){
-  txid=(txid||'AGPainel').replace(/[^A-Za-z0-9]/g,'').substring(0,25).padEnd(1,'A');
+  txid=(txid||'GEPainel').replace(/[^A-Za-z0-9]/g,'').substring(0,25).padEnd(1,'A');
   const gui=_pixField('00','BR.GOV.BCB.PIX')+_pixField('01',chave);
   const mai=_pixField('26',gui);
   const addi=_pixField('62',_pixField('05',txid));
@@ -3621,7 +3785,7 @@ async function avisarPagamento(){
   }catch(e){console.warn('Erro ao registrar renovacao',e);}
 
   // Envia WhatsApp
-  const msg=`Olá! Acabei de realizar o pagamento via PIX para renovação do AGPainel.%0A%0A👤 Usuário: ${session.nome}%0A📋 Login: @${session.login}%0A📅 Plano: ${plano.label}%0A💰 Valor: R$ ${plano.valor.toFixed(2).replace('.',',')}%0A%0AAguardo a liberação do acesso. Obrigado!`;
+  const msg=`Olá! Acabei de realizar o pagamento via PIX para renovação do GEPainel.%0A%0A👤 Usuário: ${session.nome}%0A📋 Login: @${session.login}%0A📅 Plano: ${plano.label}%0A💰 Valor: R$ ${plano.valor.toFixed(2).replace('.',',')}%0A%0AAguardo a liberação do acesso. Obrigado!`;
   const tel='5591985919201';
   window.open('https://wa.me/'+tel+'?text='+msg,'_blank');
 
@@ -4040,7 +4204,7 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
   </div>
   <table><thead><tr><th>Data</th><th>Valor</th><th>Juros</th><th>Parcela</th><th>Garantia</th><th>Situação</th></tr></thead>
   <tbody>${empRows}</tbody></table>
-  <div class="footer">AGPainel · ${session?.nome||''}</div>
+  <div class="footer">GEPainel · ${session?.nome||''}</div>
   <br><button onclick="window.print()" style="padding:.5rem 1.5rem;background:#EA580C;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨 Imprimir</button>
   </body></html>`);
   win.document.close();
