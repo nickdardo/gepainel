@@ -4182,7 +4182,7 @@ function toggleDarkMode(){
   document.body.classList.toggle('dark', next==='dark');
   // Forçar cores do body explicitamente
   if(next==='light'){
-    document.body.style.background='#F0FDF4';
+    document.body.style.background='#F1F5F9';
     document.body.style.color='#111827';
   } else {
     document.body.style.background='#0D0B1E';
@@ -4207,7 +4207,7 @@ function loadDarkMode(){
     document.documentElement.setAttribute('data-theme', isLight?'light':'dark');
     document.body.classList.toggle('dark', !isLight);
     if(isLight){
-      document.body.style.background='#F0FDF4';
+      document.body.style.background='#F1F5F9';
       document.body.style.color='#111827';
     } else {
       document.body.style.background='#0D0B1E';
