@@ -1580,9 +1580,11 @@ function renderDashboard(){
             const quitados=[];
             Object.values(porTomador).forEach(item=>{
               if(item.emprestimosQuitados.length>0){
+                console.log('Cliente quitado:',item.tomador?.nome,'- Quitados:',item.emprestimosQuitados.length,'de',item.totalEmprestimos);
                 quitados.push(item);
               }
             });
+            console.log('Total de clientes com empréstimos quitados:',quitados.length);
             
             // Ordena por valor recebido (maior primeiro)
             quitados.sort((a,b)=>b.totalRecebido-a.totalRecebido);
