@@ -2540,9 +2540,9 @@ function openParcelas(empId){
       const diasAtras=atras?Math.floor((new Date()-new Date(p.vencimento+'T12:00:00'))/(1000*60*60*24)):0;
       const vencHoje=p.status==='pendente'&&p.vencimento===today();
       const isPendente=p.status==='pendente';
-      return`<div ${isPendente?`onclick="confirmarPagamento('${p.id}','${empId}')" style="cursor:pointer;"`:'style="'}display:flex;align-items:center;justify-content:space-between;padding:.7rem .85rem;margin-bottom:.4rem;border-radius:var(--rs);border:1px solid ${p.status==='pago'?'#D1FAE5':atras?'#FECACA':vencHoje?'#FDE68A':'#E5E7EB'};background:${p.status==='pago'?'#F0FDF4':atras?'#FEF2F2':vencHoje?'#FFFBEB':'#FAFAFA'}${isPendente?';transition:all .15s':''}"${isPendente?' onmouseenter="this.style.transform=\'scale(1.01)\'" onmouseleave="this.style.transform=\'scale(1)\'"':''}>
+      return`<div ${isPendente?`onclick="confirmarPagamento('${p.id}','${empId}')"`:''} style="display:flex;align-items:center;justify-content:space-between;padding:.7rem .85rem;margin-bottom:.4rem;border-radius:var(--rs);border:1px solid ${p.status==='pago'?'#D1FAE5':atras?'#FECACA':vencHoje?'#FDE68A':'#E5E7EB'};background:${p.status==='pago'?'#F0FDF4':atras?'#FEF2F2':vencHoje?'#FFFBEB':'#FAFAFA'};${isPendente?'cursor:pointer;transition:all .15s':''}">
         ${p.status==='pendente'?`<input type="checkbox" class="chk-parc" data-id="${p.id}" onchange="onChkParcChange('${empId}')" onclick="event.stopPropagation()" style="width:15px;height:15px;cursor:pointer;margin-right:.5rem;flex-shrink:0;display:none"/>`:'<div style="width:21px;flex-shrink:0"></div>'}
-        <div style="flex:1;min-width:0;pointer-events:none">
+        <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':vencHoje?'var(--amb)':'var(--n1)'}">
             ${p.numero}º ${lblParcela(emp)}
             ${atras?`<span style="font-size:10px;font-weight:400;background:var(--red);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px">${diasAtras}d atraso</span>`:''}
@@ -2554,8 +2554,8 @@ function openParcelas(empId){
             ${p.pago_em?` · Pago em: <strong style="color:var(--grn)">${fmtDate(p.pago_em)}</strong>`:''}
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;pointer-events:auto">
-          <span style="font-weight:700;font-size:14px;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':'var(--n1)'}${isPendente?';pointer-events:none':''}">${fmtR(p.valor)}</span>
+        <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+          <span style="font-weight:700;font-size:14px;color:${p.status==='pago'?'var(--grn)':atras?'var(--red)':'var(--n1)'}">${fmtR(p.valor)}</span>
           ${p.status==='pendente'?`
             <button class="btn btn-xs btn-grn btn-confirmar-parc" data-pid="${p.id}" onclick="event.stopPropagation();confirmarPagamento('${p.id}','${empId}')" style="font-weight:700">Confirmar</button>
             <button class="btn btn-xs btn-d" onclick="event.stopPropagation();deleteParcela('${p.id}','${empId}')" title="Remover parcela">✕</button>
