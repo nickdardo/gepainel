@@ -1528,7 +1528,7 @@ function renderDashboard(){
     <div class="stats">
       <div class="stat"><div class="stat-label">Total Emprestado</div><div class="stat-value" style="color:var(--blu)">${fmtR(totalEmp)}</div><div class="stat-sub">${empsAtivos.length} em aberto</div></div>
       <div class="stat"><div class="stat-label">Lucro Esperado</div><div class="stat-value" style="color:var(--grn)">${fmtR(totalLucro)}</div><div class="stat-sub">em juros</div></div>
-      <div class="stat"><div class="stat-label">Recebido</div><div class="stat-value" style="color:var(--grn)">${fmtR(pRecebido)}</div><div class="stat-sub">em parcelas pagas</div></div>
+      <div class="stat" onclick="abrirRecebidos()" style="cursor:pointer;transition:all .15s" onmouseenter="this.style.background='var(--card2)'" onmouseleave="this.style.background=''"><div class="stat-label">Recebido</div><div class="stat-value" style="color:var(--grn)">${fmtR(pRecebido)}</div><div class="stat-sub">em parcelas pagas</div></div>
       <div class="stat"><div class="stat-label">Próximas Parcelas</div><div class="stat-value" style="color:var(--amb)">${fmtR(pPendente)}</div><div class="stat-sub">${parcs.filter(p=>p.status==='pendente').length} parcelas</div></div>
     </div>
     ${(()=>{
@@ -1545,31 +1545,90 @@ function renderDashboard(){
     })()}
     <div class="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
       <div class="card">
-        <div class="card-title">Últimos Empréstimos</div>
-        ${emps.slice(0,6).map(e=>{
-          const tom=tomadores.find(t=>t.id===e.tomador_id);
-          const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
-          const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
-          const atCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
-          const tipo=e.tipo||'juros';
-          const isConsig=tipo==='consignado';
-          const cor=isConsig?'var(--blu)':'var(--grn)';
-          let statusTxt='';
-          if(parcsEmp.length===0){statusTxt=isConsig?'Sem parcelas':'Sem juros';}
-          else if(atCnt>0){statusTxt=`⚠️ ${atCnt} em atraso`;}
-          else if(isConsig){statusTxt=`${pgCnt}/${parcsEmp.length} pagas`;}
-          else{statusTxt=`${pgCnt} pago${pgCnt!==1?'s':''}`;}
-          return`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #F3F4F6">
-            <div>
-              <div style="font-size:13px;font-weight:600;cursor:pointer;color:var(--n1)" onclick="openClientView('${tom?.id}')">${tom?.nome||'—'} <span style="font-size:11px;color:var(--grn)">→</span></div>
-              <div style="font-size:11px;color:var(--n4)">${fmtDate(e.data_emprestimo)} · ${fmtR(e.valor)}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:12px;color:${atCnt?'var(--red)':cor};font-weight:600">${statusTxt}</div>
-              <div style="font-size:11px;color:${isConsig?'#2563EB':'var(--grn)'};font-weight:600">${isConsig?'📋 Consignado':'💰 Juros'}</div>
-            </div>
-          </div>`;
-        }).join('')||'<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum empréstimo ainda.</div></div>'}
+        ${mostrandoQuitados?`
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="card-title" style="margin-bottom:0">💰 Clientes Quitados</div>
+            <button onclick="voltarUltimosEmp()" class="btn btn-xs btn-g" style="font-size:11px">← Voltar</button>
+          </div>
+          ${(()=>{
+            // Agrupa empréstimos por tomador
+            const porTomador = {};
+            emprestimos.forEach(emp=>{
+              if(!porTomador[emp.tomador_id]){
+                porTomador[emp.tomador_id]={
+                  tomador:tomadores.find(t=>t.id===emp.tomador_id),
+                  emprestimos:[],
+                  totalRecebido:0,
+                  temPendente:false
+                };
+              }
+              const parcsEmp=parcelas.filter(p=>p.emprestimo_id===emp.id);
+              const recebido=parcsEmp.filter(p=>p.status==='pago').reduce((s,p)=>s+Number(p.valor||0),0);
+              const saldo=emp.saldo_devedor!=null?emp.saldo_devedor:emp.valor;
+              const tipo=emp.tipo||'juros';
+              const todasPagas=parcsEmp.length>0&&parcsEmp.every(p=>p.status==='pago');
+              const estaQuitado=tipo==='consignado'?todasPagas:(saldo===0&&todasPagas);
+              
+              porTomador[emp.tomador_id].emprestimos.push({...emp,recebido,estaQuitado});
+              porTomador[emp.tomador_id].totalRecebido+=recebido;
+              if(!estaQuitado)porTomador[emp.tomador_id].temPendente=true;
+            });
+            
+            // Separa quitados vs em débito
+            const quitados=[];
+            Object.values(porTomador).forEach(item=>{
+              if(!item.temPendente){
+                quitados.push(item);
+              }
+            });
+            
+            // Ordena por valor recebido (maior primeiro)
+            quitados.sort((a,b)=>b.totalRecebido-a.totalRecebido);
+            
+            if(quitados.length===0){
+              return`<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum cliente quitado ainda.</div></div>`;
+            }
+            
+            return quitados.map(item=>`
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem .85rem;margin-bottom:.5rem;border-radius:var(--rs);border:1px solid var(--grn1);background:var(--grn0);cursor:pointer;transition:all .15s" onclick="openClientView('${item.tomador.id}')" onmouseenter="this.style.background='#DCFCE7'" onmouseleave="this.style.background='var(--grn0)'">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--n1);margin-bottom:2px">${item.tomador?.nome||'—'}</div>
+                  <div style="font-size:11px;color:var(--n3)">${item.emprestimos.length} empréstimo${item.emprestimos.length!==1?'s':''} · Tudo quitado!</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-weight:700;color:var(--grn);font-size:1rem">${fmtR(item.totalRecebido)}</div>
+                  <div style="font-size:10px;color:var(--grn)">recebido</div>
+                </div>
+              </div>
+            `).join('');
+          })()}
+        `:`
+          <div class="card-title">Últimos Empréstimos</div>
+          ${emps.slice(0,6).map(e=>{
+            const tom=tomadores.find(t=>t.id===e.tomador_id);
+            const parcsEmp=parcelas.filter(p=>p.emprestimo_id===e.id);
+            const pgCnt=parcsEmp.filter(p=>p.status==='pago').length;
+            const atCnt=parcsEmp.filter(p=>isAtrasada(p)).length;
+            const tipo=e.tipo||'juros';
+            const isConsig=tipo==='consignado';
+            const cor=isConsig?'var(--blu)':'var(--grn)';
+            let statusTxt='';
+            if(parcsEmp.length===0){statusTxt=isConsig?'Sem parcelas':'Sem juros';}
+            else if(atCnt>0){statusTxt=`⚠️ ${atCnt} em atraso`;}
+            else if(isConsig){statusTxt=`${pgCnt}/${parcsEmp.length} pagas`;}
+            else{statusTxt=`${pgCnt} pago${pgCnt!==1?'s':''}`;}
+            return`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #F3F4F6">
+              <div>
+                <div style="font-size:13px;font-weight:600;cursor:pointer;color:var(--n1)" onclick="openClientView('${tom?.id}')">${tom?.nome||'—'} <span style="font-size:11px;color:var(--grn)">→</span></div>
+                <div style="font-size:11px;color:var(--n4)">${fmtDate(e.data_emprestimo)} · ${fmtR(e.valor)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12px;color:${atCnt?'var(--red)':cor};font-weight:600">${statusTxt}</div>
+                <div style="font-size:11px;color:${isConsig?'#2563EB':'var(--grn)'};font-weight:600">${isConsig?'📋 Consignado':'💰 Juros'}</div>
+              </div>
+            </div>`;
+          }).join('')||'<div class="empty"><div style="font-size:2rem;margin-bottom:.5rem;color:var(--n5)">—</div><div class="empty-text">Nenhum empréstimo ainda.</div></div>'}
+        `}
       </div>
       <div class="card">
         <div class="card-title">Parcelas em Atraso</div>
@@ -2461,6 +2520,19 @@ async function deleteEmp(id){
   parcelas=parcelas.filter(p=>p.emprestimo_id!==id);
   toast('Empréstimo removido');
   if(curPage==='dashboard')renderDashboard();else renderEmprestimos();
+}
+
+// ══ RECEBIDOS - CLIENTES QUITADOS ══
+let mostrandoQuitados = false;
+
+function abrirRecebidos(){
+  mostrandoQuitados = true;
+  renderDashboard(); // Re-renderiza o dashboard para atualizar o card
+}
+
+function voltarUltimosEmp(){
+  mostrandoQuitados = false;
+  renderDashboard();
 }
 
 // ══ PARCELAS ══
