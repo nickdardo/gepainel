@@ -2157,9 +2157,20 @@ function openEmpModal(id){
 }
 
 // Função auxiliar para adicionar meses mantendo o dia do mês
+// Função auxiliar para adicionar meses mantendo o dia do mês
+// Se o dia não existir no novo mês (ex: 31 fev), usa o último dia desse mês
 function addMonths(dateStr, months){
   const d=new Date(dateStr+'T12:00:00');
+  const originalDay=d.getDate();
+  
+  // Adiciona os meses
   d.setMonth(d.getMonth()+months);
+  
+  // Se o dia mudou (overflow para próximo mês), volta para último dia do mês correto
+  if(d.getDate()!==originalDay){
+    d.setDate(0); // Volta para o último dia do mês anterior
+  }
+  
   return d.toISOString().split('T')[0];
 }
 
