@@ -1569,6 +1569,10 @@ function renderDashboard(){
               const todasPagas=parcsEmp.length>0&&parcsEmp.every(p=>p.status==='pago');
               const estaQuitado=tipo==='consignado'?todasPagas:(saldo===0&&todasPagas);
               
+              // LOG DETALHADO
+              const tom=porTomador[emp.tomador_id].tomador;
+              console.log(`[${tom?.nome}] Emp: R$ ${emp.valor} | Tipo: ${tipo} | Saldo: R$ ${saldo} | Parcelas: ${parcsEmp.filter(p=>p.status==='pago').length}/${parcsEmp.length} | Quitado: ${estaQuitado?'SIM ✅':'NÃO ❌'}`);
+              
               porTomador[emp.tomador_id].totalEmprestimos++;
               porTomador[emp.tomador_id].totalRecebido+=recebido;
               if(estaQuitado){
