@@ -1414,7 +1414,7 @@ function mostrarBoasVindas(){
     modal.innerHTML=`
       <div style="background:var(--card);border-radius:var(--r);max-width:480px;width:100%;box-shadow:var(--shm);overflow:hidden">
         <!-- Header -->
-        <div style="background:linear-gradient(135deg,#EA580C 0%,#DC2626 100%);padding:1.75rem 1.5rem;text-align:center">
+        <div style="background:linear-gradient(135deg,#22D3EE 0%,#818CF8 50%,#C084FC 100%);padding:1.75rem 1.5rem;text-align:center">
           <div style="font-size:3rem;margin-bottom:.5rem">👋</div>
           <div style="font-family:var(--FT);font-size:1.5rem;color:#fff;font-weight:700;margin-bottom:.25rem">Bem-vindo ao GEPainel!</div>
           <div style="font-size:13px;color:rgba(255,255,255,.9)">Sistema de gestão de empréstimos</div>
@@ -1442,7 +1442,7 @@ function mostrarBoasVindas(){
           </div>
           
           <!-- Botão fechar -->
-          <button onclick="this.closest('div[style*=fixed]').remove()" class="btn btn-grn btn-full" style="padding:.85rem;font-weight:600;font-size:15px">
+          <button onclick="this.closest('div[style*=fixed]').remove()" class="btn btn-full" style="background:linear-gradient(135deg,#818CF8 0%,#C084FC 100%);color:#fff;padding:.85rem;font-weight:600;font-size:15px;border:none">
             Entendi, vamos começar! →
           </button>
         </div>
@@ -3532,6 +3532,25 @@ function renderPerfil(){
           ${session.avatar_url?`<button class="btn btn-g btn-full" onclick="removeAvatar()" style="margin-top:-.5rem">Remover foto</button>`:''}
         </div>
       </div>
+      
+      <div class="card">
+        <div class="card-title">Dados Pessoais</div>
+        <div style="display:flex;flex-direction:column;gap:.85rem">
+          <div class="fg">
+            <span class="lbl">Nome completo</span>
+            <input type="text" id="p-nome" value="${session.nome||''}" placeholder="Seu nome completo"/>
+          </div>
+          <div class="fg">
+            <span class="lbl">E-mail</span>
+            <input type="email" id="p-email" value="${session.email||''}" placeholder="seu@email.com"/>
+            <div style="font-size:11px;color:var(--n4);margin-top:.3rem">
+              ${session.email?'✓ E-mail cadastrado':'⚠️ Adicione seu e-mail para recuperar senha'}
+            </div>
+          </div>
+          <button class="btn btn-p btn-full" onclick="savePerfilDados()">Salvar dados</button>
+        </div>
+      </div>
+      
       <div class="card">
         <div class="card-title">Trocar Senha</div>
         <div style="display:flex;flex-direction:column;gap:.85rem">
@@ -3623,6 +3642,38 @@ function checkPwdMatch(){
   const el=document.getElementById('pwd-match');if(!el||!nw2)return;
   if(nw===nw2){el.textContent='✓ Senhas coincidem';el.style.color='var(--grn)';}
   else{el.textContent='✕ Senhas não coincidem';el.style.color='var(--red)';}
+}
+
+async function savePerfilDados(){
+  const nome=document.getElementById('p-nome')?.value?.trim()||'';
+  const email=document.getElementById('p-email')?.value?.trim()||'';
+  
+  if(!nome){toast('⚠ Nome é obrigatório',true);return;}
+  
+  // Valida e-mail se preenchido
+  if(email&&!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
+    toast('⚠ E-mail inválido',true);return;
+  }
+  
+  // Verifica se e-mail já está em uso
+  if(email){
+    const{data:existente}=await sb.from('users').select('id').eq('email',email).single();
+    if(existente&&existente.id!==session.id){
+      toast('⚠ Este e-mail já está cadastrado',true);return;
+    }
+  }
+  
+  const{error}=await sb.from('users').update({nome,email:email||null}).eq('id',session.id);
+  if(error){toast('Erro ao salvar',true);return;}
+  
+  // Atualiza session e users
+  session.nome=nome;
+  session.email=email||null;
+  saveSession(session);
+  users=users.map(x=>x.id===session.id?{...x,nome,email:email||null}:x);
+  
+  toast('✓ Dados salvos com sucesso!');
+  renderPerfil();
 }
 
 async function savePerfilSenha(){
