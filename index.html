@@ -200,6 +200,15 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
 .empty{text-align:center;padding:2.5rem;color:var(--n4)}
 .empty-icon{font-size:2.5rem;margin-bottom:.5rem}
 .empty-text{font-size:14px;color:var(--n3)}
+
+/* TOGGLE SWITCH */
+.toggle-switch{position:relative;display:inline-block;width:44px;height:24px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#CBD5E1;border-radius:24px;transition:all .3s}
+.toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:all .3s}
+.toggle-switch input:checked+.toggle-slider{background:#16A34A}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;color:#fff;padding:.75rem 1.25rem;border-radius:var(--r);font-size:14px;font-weight:500;z-index:999;box-shadow:var(--shm);animation:sup .2s ease;max-width:320px}
 @keyframes sup{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes blink-grn{0%,100%{box-shadow:0 0 0 0 rgba(234,88,12,.5)}50%{box-shadow:0 0 0 6px rgba(234,88,12,0)}}
@@ -727,6 +736,28 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
       <!-- Planos -->
       <div id="renov-planos">
         <div style="font-size:13px;color:var(--n3);margin-bottom:1rem">Escolha o plano desejado e pague via PIX:</div>
+        
+        <!-- Toggle Renovação Automática -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--rs);padding:.85rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:var(--n1);margin-bottom:3px">🔄 Renovação Automática</div>
+            <div style="font-size:11px;color:var(--n3)">Renova automaticamente quando expira</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="renov-auto-toggle" onchange="mostrarAvisoRenovacao()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <!-- Aviso de renovação automática -->
+        <div id="renov-auto-aviso" style="display:none;background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--rs);padding:.75rem;font-size:12px;color:#9A3412;margin-bottom:1rem">
+          <strong>ℹ️ Como funciona:</strong><br>
+          • Pagamento único agora via PIX<br>
+          • Quando seu acesso expirar, será gerada uma nova cobrança automaticamente<br>
+          • Você receberá notificação para pagar e manter o acesso ativo<br>
+          • Pode desativar a qualquer momento
+        </div>
+        
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem" id="renov-grid"></div>
       </div>
       <!-- QR Code -->
@@ -4354,35 +4385,144 @@ function abrirRenovacao(){
       <div style="font-size:1.3rem;font-weight:800;color:#EA580C;margin:.25rem 0">R$ ${p.valor.toFixed(2).replace('.',',')}</div>
       <div style="font-size:11px;color:var(--n4)">${p.desc}</div>
     </div>`).join('');
+  
+  // Carrega preferência de renovação automática
+  const toggle=document.getElementById('renov-auto-toggle');
+  if(toggle){
+    toggle.checked=!!session.auto_renewal;
+    // Mostra aviso se já estiver ativo
+    const aviso=document.getElementById('renov-auto-aviso');
+    if(aviso)aviso.style.display=toggle.checked?'':'none';
+  }
+  
   document.getElementById('renov-planos').style.display='';
   document.getElementById('renov-qr').style.display='none';
   openM('renov-modal');
 }
 
-function selecionarPlano(idx){
-  const plano=_PIX_PLANOS[idx];
-  const txid='AGP'+session.id.substring(0,8).toUpperCase();
-  const emv=gerarPixEMV(_PIX_KEY,_PIX_NAME,_PIX_CITY,plano.valor,txid);
+function mostrarAvisoRenovacao(){
+  const toggle=document.getElementById('renov-auto-toggle');
+  const aviso=document.getElementById('renov-auto-aviso');
+  if(aviso)aviso.style.display=toggle?.checked?'':'none';
+}
 
-  document.getElementById('renov-qr-titulo').textContent=`PIX — ${plano.label} · R$ ${plano.valor.toFixed(2).replace('.',',')}`;
-  document.getElementById('renov-pix-code').value=emv;
+async function selecionarPlano(idx){
+  const plano=_PIX_PLANOS[idx];
+  const autoRenewal=document.getElementById('renov-auto-toggle')?.checked||false;
+  
+  // Mostra loading
+  const qrDiv=document.getElementById('renov-qr-canvas');
+  qrDiv.innerHTML='<div style="padding:2rem;text-align:center;color:var(--n3)"><div style="font-size:2rem;margin-bottom:.5rem">⏳</div>Gerando PIX...</div>';
   document.getElementById('renov-planos').style.display='none';
   document.getElementById('renov-qr').style.display='';
-
-  // Gera QR Code
-  const qrDiv=document.getElementById('renov-qr-canvas');
-  qrDiv.innerHTML='';
-  if(typeof QRCode==='undefined'){
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-    s.onload=()=>new QRCode(qrDiv,{text:emv,width:200,height:200,colorDark:'#111827',colorLight:'#ffffff'});
-    document.head.appendChild(s);
-  } else {
-    new QRCode(qrDiv,{text:emv,width:200,height:200,colorDark:'#111827',colorLight:'#ffffff'});
+  
+  try{
+    // Chama Edge Function para criar pagamento no Mercado Pago
+    const {data,error}=await supabase.functions.invoke('create-pix-payment',{
+      body:{
+        dias:plano.dias,
+        valor:plano.valor,
+        autoRenewal:autoRenewal
+      }
+    });
+    
+    if(error)throw error;
+    if(!data.success)throw new Error(data.error||'Erro ao gerar PIX');
+    
+    // Atualiza interface com QR Code do Mercado Pago
+    document.getElementById('renov-qr-titulo').textContent=`PIX — ${plano.label} · R$ ${plano.valor.toFixed(2).replace('.',',')}`;
+    document.getElementById('renov-pix-code').value=data.qr_code||'';
+    
+    // Gera QR Code visual
+    qrDiv.innerHTML='';
+    if(data.qr_code){
+      if(typeof QRCode==='undefined'){
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        s.onload=()=>new QRCode(qrDiv,{text:data.qr_code,width:200,height:200,colorDark:'#111827',colorLight:'#ffffff'});
+        document.head.appendChild(s);
+      }else{
+        new QRCode(qrDiv,{text:data.qr_code,width:200,height:200,colorDark:'#111827',colorLight:'#ffffff'});
+      }
+    }
+    
+    // Guarda plano selecionado
+    window._renovPlanoSel=plano;
+    window._renovPaymentId=data.payment_id;
+    
+    // Inicia verificação de pagamento
+    iniciarVerificacaoPagamento(data.payment_id);
+    
+  }catch(err){
+    console.error('Erro ao criar PIX:',err);
+    toast('❌ Erro ao gerar PIX: '+err.message);
+    qrDiv.innerHTML='<div style="padding:2rem;text-align:center;color:var(--red)"><div style="font-size:2rem;margin-bottom:.5rem">❌</div>Erro ao gerar PIX</div>';
   }
+}
 
-  // Guarda plano selecionado para aviso
-  window._renovPlanoSel=plano;
+async function salvarPreferenciaRenovacao(diasPlano, autoRenewal){
+  try{
+    const {error}=await supabase.from('users').update({
+      auto_renewal: autoRenewal,
+      auto_renewal_plan: diasPlano
+    }).eq('id',session.id);
+    
+    if(error)throw error;
+    
+    // Atualiza sessão local
+    session.auto_renewal=autoRenewal;
+    session.auto_renewal_plan=diasPlano;
+    
+    if(autoRenewal){
+      toast(`✅ Renovação automática ATIVADA (${diasPlano} dias)`);
+    }
+  }catch(err){
+    console.error('Erro ao salvar preferência:',err);
+  }
+}
+
+// Verifica status do pagamento a cada 3 segundos
+let verificacaoInterval=null;
+function iniciarVerificacaoPagamento(paymentId){
+  // Limpa intervalo anterior se existir
+  if(verificacaoInterval)clearInterval(verificacaoInterval);
+  
+  let tentativas=0;
+  const maxTentativas=100; // 5 minutos (100 x 3s)
+  
+  verificacaoInterval=setInterval(async()=>{
+    tentativas++;
+    
+    // Para após 5 minutos
+    if(tentativas>=maxTentativas){
+      clearInterval(verificacaoInterval);
+      return;
+    }
+    
+    try{
+      // Busca status da transação no banco
+      const {data,error}=await supabase
+        .from('pix_transactions')
+        .select('status')
+        .eq('payment_id',paymentId)
+        .single();
+      
+      if(error)return;
+      
+      if(data.status==='approved'){
+        clearInterval(verificacaoInterval);
+        
+        // PAGAMENTO APROVADO!
+        closeM('renov-modal');
+        toast('🎉 Pagamento aprovado! Seu acesso foi renovado!');
+        
+        // Recarrega dados do usuário
+        setTimeout(()=>location.reload(),2000);
+      }
+    }catch(err){
+      console.error('Erro ao verificar pagamento:',err);
+    }
+  },3000); // Verifica a cada 3 segundos
 }
 
 function copiarPix(){
