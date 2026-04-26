@@ -4417,26 +4417,22 @@ async function selecionarPlano(idx){
   document.getElementById('renov-qr').style.display='';
   
   try{
-    // Verifica autenticação
+    // Verifica se está logado
     if(!session||!session.id){
       throw new Error('Você precisa estar logado');
     }
     
-    // Pega token atual
-    const {data:{session:authSession}}=await sb.auth.getSession();
-    if(!authSession){
-      throw new Error('Sessão expirada. Faça login novamente');
-    }
-    
-    // Chama Edge Function para criar pagamento no Mercado Pago
+    // Chama Edge Function enviando user_id direto
     const response=await fetch('https://abmwlhxdvfgnptmvtkla.supabase.co/functions/v1/create-pix-payment',{
       method:'POST',
       headers:{
-        'Authorization':`Bearer ${authSession.access_token}`,
         'Content-Type':'application/json',
         'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFibXdsaHhkdmZnbnB0bXZ0a2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0NjczMjQsImV4cCI6MjA1MjA0MzMyNH0.kdCte6wubAs7sEEDPSutT1lFAQxNRUQsB-YW_LMWK88'
       },
       body:JSON.stringify({
+        user_id:session.id,
+        user_email:session.email,
+        user_nome:session.nome,
         dias:plano.dias,
         valor:plano.valor,
         autoRenewal:autoRenewal
