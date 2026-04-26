@@ -1661,9 +1661,9 @@ function renderDashboard(){
       });
       let out='';
       if(atrasadas.length)out+=`<div class="warn-box">⚠ <strong>${atrasadas.length} parcela${atrasadas.length!==1?'s':''} em atraso!</strong> Verifique os empréstimos pendentes.</div>`;
-      if(vencHoje.length)out+=`<div id="alerta-hoje" class="warn-box" onclick="mostrarVencimento('hoje')" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(153,27,27,.2)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">●</span><strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`;
-      if(venc3.length)out+=`<div id="alerta-3dias" class="info-box" onclick="mostrarVencimento('3dias')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(146,64,14,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">◉</span><strong>${venc3.length} parcela${venc3.length!==1?'s':''}</strong> vence${venc3.length===1?'':'m'} nos próximos 3 dias.</div>`;
-      if(venc7.length)out+=`<div id="alerta-7dias" class="info-box" onclick="mostrarVencimento('7dias')" style="background:#F8FAFC;border-color:#CBD5E1;color:#475569;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(71,85,105,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">○</span><strong>${venc7.length} parcela${venc7.length!==1?'s':''}</strong> vence${venc7.length===1?'':'m'} em até 7 dias.</div>`;
+      if(vencHoje.length)out+=`<div id="alerta-hoje" class="warn-box ${filtroAtivo==='hoje'?'alerta-ativo':''}" onclick="mostrarVencimento('hoje')" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(153,27,27,.2)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">●</span><strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`;
+      if(venc3.length)out+=`<div id="alerta-3dias" class="info-box ${filtroAtivo==='3dias'?'alerta-ativo':''}" onclick="mostrarVencimento('3dias')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(146,64,14,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">◉</span><strong>${venc3.length} parcela${venc3.length!==1?'s':''}</strong> vence${venc3.length===1?'':'m'} nos próximos 3 dias.</div>`;
+      if(venc7.length)out+=`<div id="alerta-7dias" class="info-box ${filtroAtivo==='7dias'?'alerta-ativo':''}" onclick="mostrarVencimento('7dias')" style="background:#F8FAFC;border-color:#CBD5E1;color:#475569;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(71,85,105,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">○</span><strong>${venc7.length} parcela${venc7.length!==1?'s':''}</strong> vence${venc7.length===1?'':'m'} em até 7 dias.</div>`;
       return out;
     })()}
     <div class="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -2652,31 +2652,17 @@ let filtroAtivo = null; // null, 'hoje', '3dias', '7dias'
 function mostrarVencimento(tipo){
   // Se clicar no mesmo filtro, fecha (toggle)
   if(filtroAtivo === tipo){
-    voltarUltimosEmp();
+    filtroAtivo = null;
+    renderDashboard();
     return;
   }
   
   filtroAtivo = tipo;
-  
-  // Remove estado ativo de todos
-  document.getElementById('alerta-hoje')?.classList.remove('alerta-ativo');
-  document.getElementById('alerta-3dias')?.classList.remove('alerta-ativo');
-  document.getElementById('alerta-7dias')?.classList.remove('alerta-ativo');
-  
-  // Adiciona estado ativo no clicado
-  if(tipo==='hoje')document.getElementById('alerta-hoje')?.classList.add('alerta-ativo');
-  else if(tipo==='3dias')document.getElementById('alerta-3dias')?.classList.add('alerta-ativo');
-  else if(tipo==='7dias')document.getElementById('alerta-7dias')?.classList.add('alerta-ativo');
-  
   renderDashboard();
 }
 
 function voltarUltimosEmp(){
   filtroAtivo = null;
-  // Remove estado ativo de todos
-  document.getElementById('alerta-hoje')?.classList.remove('alerta-ativo');
-  document.getElementById('alerta-3dias')?.classList.remove('alerta-ativo');
-  document.getElementById('alerta-7dias')?.classList.remove('alerta-ativo');
   renderDashboard();
 }
 
