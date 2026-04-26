@@ -202,6 +202,7 @@ tbody td{padding:.75rem 1rem;vertical-align:middle;color:var(--n1)}
 @keyframes blink-grn{0%,100%{box-shadow:0 0 0 0 rgba(234,88,12,.5)}50%{box-shadow:0 0 0 6px rgba(234,88,12,0)}}
 .info-box{padding:.75rem 1rem;background:#FFF7ED;border-radius:var(--rs);font-size:13px;color:#9A3412;border:1px solid #FED7AA;margin-bottom:1rem}
 .warn-box{padding:.75rem 1rem;background:var(--amb0);border-radius:var(--rs);font-size:13px;color:#78350F;border:1px solid var(--amb1);margin-bottom:1rem}
+.alerta-ativo{border-width:3px!important;box-shadow:0 4px 12px rgba(0,0,0,.2)!important;transform:scale(1.02)!important}
 
 @media(max-width:900px){
   .hamburger{display:flex}
@@ -1628,9 +1629,9 @@ function renderDashboard(){
       const venc7=parcelas.filter(p=>p.status==='pendente'&&new Date(p.vencimento+'T12:00:00')>em3&&new Date(p.vencimento+'T12:00:00')<=em7);
       let out='';
       if(atrasadas.length)out+=`<div class="warn-box">⚠ <strong>${atrasadas.length} parcela${atrasadas.length!==1?'s':''} em atraso!</strong> Verifique os empréstimos pendentes.</div>`;
-      if(vencHoje.length)out+=`<div class="warn-box" onclick="mostrarVencimento('hoje')" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;cursor:pointer;transition:all .15s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'"><span style="font-size:1.2rem;margin-right:6px">●</span><strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`;
-      if(venc3.length)out+=`<div class="info-box" onclick="mostrarVencimento('3dias')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;cursor:pointer;transition:all .15s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'"><span style="font-size:1.2rem;margin-right:6px">◉</span><strong>${venc3.length} parcela${venc3.length!==1?'s':''}</strong> vence${venc3.length===1?'':'m'} nos próximos 3 dias.</div>`;
-      if(venc7.length)out+=`<div class="info-box" onclick="mostrarVencimento('7dias')" style="cursor:pointer;transition:all .15s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'"><span style="font-size:1.2rem;margin-right:6px">○</span><strong>${venc7.length} parcela${venc7.length!==1?'s':''}</strong> vence${venc7.length===1?'':'m'} em até 7 dias.</div>`;
+      if(vencHoje.length)out+=`<div id="alerta-hoje" class="warn-box" onclick="mostrarVencimento('hoje')" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(153,27,27,.2)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">●</span><strong>${vencHoje.length} parcela${vencHoje.length!==1?'s':''} vence${vencHoje.length===1?'':'m'} hoje.</strong></div>`;
+      if(venc3.length)out+=`<div id="alerta-3dias" class="info-box" onclick="mostrarVencimento('3dias')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(146,64,14,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">◉</span><strong>${venc3.length} parcela${venc3.length!==1?'s':''}</strong> vence${venc3.length===1?'':'m'} nos próximos 3 dias.</div>`;
+      if(venc7.length)out+=`<div id="alerta-7dias" class="info-box" onclick="mostrarVencimento('7dias')" style="background:#F8FAFC;border-color:#CBD5E1;color:#475569;cursor:pointer;transition:all .2s;font-weight:600" onmouseenter="this.style.boxShadow='0 4px 8px rgba(71,85,105,.15)'" onmouseleave="this.style.boxShadow=''"><span style="font-size:1.2rem;margin-right:6px">○</span><strong>${venc7.length} parcela${venc7.length!==1?'s':''}</strong> vence${venc7.length===1?'':'m'} em até 7 dias.</div>`;
       return out;
     })()}
     <div class="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -1671,11 +1672,11 @@ function renderDashboard(){
             });
             
             return Object.values(porCliente).map(item=>`
-              <div style="margin-bottom:.75rem;border:1px solid ${filtroAtivo==='hoje'?'#FECACA':filtroAtivo==='3dias'?'#FDE68A':'#E5E7EB'};border-radius:var(--rs);overflow:hidden;background:${filtroAtivo==='hoje'?'#FEF2F2':filtroAtivo==='3dias'?'#FFFBEB':'#F9FAFB'};cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(0,0,0,.1)" onclick="openClientView('${item.tomador.id}')" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,.15)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,.1)'">
+              <div style="margin-bottom:.75rem;border:2px solid ${filtroAtivo==='hoje'?'#FECACA':filtroAtivo==='3dias'?'#FDE68A':'#CBD5E1'};border-radius:var(--rs);overflow:hidden;background:${filtroAtivo==='hoje'?'#FEF2F2':filtroAtivo==='3dias'?'#FFFBEB':'#F8FAFC'};cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(0,0,0,.1)" onclick="openClientView('${item.tomador.id}')" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 8px rgba(0,0,0,.15)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,.1)'">
                 <div style="padding:.75rem 1rem">
-                  <div style="font-weight:700;color:var(--n1);margin-bottom:4px;font-size:13px">${item.tomador.nome}</div>
+                  <div style="font-weight:700;color:#1E293B;margin-bottom:4px;font-size:14px">${item.tomador.nome}</div>
                   ${item.parcelas.map(p=>`
-                    <div style="font-size:11px;color:var(--n3);margin-top:2px">
+                    <div style="font-size:11px;color:#64748B;margin-top:2px">
                       • ${fmtR(p.valor)} · Venc: ${fmtDate(p.vencimento)} · ${p.numero}º ${p.emp?.tipo==='consignado'?'Parcela':'Juros'}
                     </div>
                   `).join('')}
@@ -2608,11 +2609,26 @@ let filtroAtivo = null; // null, 'hoje', '3dias', '7dias'
 
 function mostrarVencimento(tipo){
   filtroAtivo = tipo;
+  
+  // Remove estado ativo de todos
+  document.getElementById('alerta-hoje')?.classList.remove('alerta-ativo');
+  document.getElementById('alerta-3dias')?.classList.remove('alerta-ativo');
+  document.getElementById('alerta-7dias')?.classList.remove('alerta-ativo');
+  
+  // Adiciona estado ativo no clicado
+  if(tipo==='hoje')document.getElementById('alerta-hoje')?.classList.add('alerta-ativo');
+  else if(tipo==='3dias')document.getElementById('alerta-3dias')?.classList.add('alerta-ativo');
+  else if(tipo==='7dias')document.getElementById('alerta-7dias')?.classList.add('alerta-ativo');
+  
   renderDashboard();
 }
 
 function voltarUltimosEmp(){
   filtroAtivo = null;
+  // Remove estado ativo de todos
+  document.getElementById('alerta-hoje')?.classList.remove('alerta-ativo');
+  document.getElementById('alerta-3dias')?.classList.remove('alerta-ativo');
+  document.getElementById('alerta-7dias')?.classList.remove('alerta-ativo');
   renderDashboard();
 }
 
