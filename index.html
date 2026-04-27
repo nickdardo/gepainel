@@ -922,7 +922,7 @@ th.sortable.asc,th.sortable.desc{color:var(--grn)}
       <div class="fgrid">
         <div class="fg full"><span class="lbl">Nome *</span><input id="um-nome" placeholder="Nome do usuário"/></div>
         <div class="fg"><span class="lbl">Login *</span><input id="um-login" placeholder="Ex: joao.silva"/></div>
-        <div class="fg"><span class="lbl">Perfil</span><select id="um-role"><option value="admin">Admin</option><option value="op">3°JOB</option></select></div>
+        <div class="fg"><span class="lbl">Perfil</span><select id="um-role"><option value="admin">Admin</option><option value="op">VIP</option></select></div>
         <div class="fg full"><span class="lbl">Senha *</span><input type="password" id="um-pass" placeholder="Mínimo 4 caracteres"/></div>
         <div class="fg full" id="um-p2w"><span class="lbl">Confirmar senha *</span><input type="password" id="um-pass2" placeholder="Repita a senha"/></div>
         <div class="fg full">
@@ -1436,7 +1436,7 @@ async function bootApp(){
         navBadge.textContent=`Ativo · ${diasNav}d`;navBadge.className='nav-badge badge-ativo';
       }
     } else {
-      navBadge.textContent='3°JOB';navBadge.className='nav-badge';
+      navBadge.textContent='VIP';navBadge.className='nav-badge';
     }
   }catch(e){}
   try{await loadAll();}catch(e){tomadores=[];emprestimos=[];parcelas=[];users=[];}
@@ -1591,7 +1591,7 @@ function renderDashboardSelector(){
         <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;${av}">${ini(u.nome)}</div>
         <div>
           <div style="font-weight:700;font-size:15px;color:var(--n1)">${u.nome}</div>
-          <div style="font-size:12px;color:var(--n4);margin-top:1px">@${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'3°JOB'}</span></div>
+          <div style="font-size:12px;color:var(--n4);margin-top:1px">@${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'VIP'}</span></div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center">
@@ -1662,7 +1662,7 @@ function renderDashboard(){
       <div style="display:flex;align-items:center;gap:.75rem">
         ${voltarBtn}
         <span class="sec-title">${userAtivo ? userAtivo.nome.split(' ')[0] : 'Dashboard'}</span>
-        ${userAtivo ? `<span class="bdg ${userAtivo.role==='admin'?'bdg-admin':'bdg-op'}">${userAtivo.role==='admin'?'Admin':'3°JOB'}</span>` : ''}
+        ${userAtivo ? `<span class="bdg ${userAtivo.role==='admin'?'bdg-admin':'bdg-op'}">${userAtivo.role==='admin'?'Admin':'VIP'}</span>` : ''}
       </div>
       <div style="display:flex;gap:.5rem">
         <button class="btn btn-grn btn-sm" onclick="openEmpModal(null)">+ Novo Empréstimo</button>
@@ -3601,7 +3601,7 @@ function renderPerfil(){
           </div>
           <div style="text-align:center">
             <div style="font-weight:600;font-size:16px">${session.nome}</div>
-            <div style="font-size:13px;color:var(--n4);margin-top:2px">@${session.login||''} · ${session.role==='admin'?'Admin':'3°JOB'}</div>
+            <div style="font-size:13px;color:var(--n4);margin-top:2px">@${session.login||''} · ${session.role==='admin'?'Admin':'VIP'}</div>
           </div>
           <div style="width:100%">
             <div style="font-size:11px;font-weight:700;color:var(--n3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem">Selecionar foto</div>
@@ -3860,7 +3860,7 @@ function usrListHTML(){
           ${u.email?`<span style="font-size:13px;color:#64748B;font-weight:400;margin-left:8px">· ${u.email}</span>`:''}
         </div>
         <div style="font-size:12px;color:#64748B;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-          @${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'3°JOB'}</span>
+          @${u.login} · <span class="bdg ${u.role==='admin'?'bdg-admin':'bdg-op'}">${u.role==='admin'?'Admin':'VIP'}</span>
           ${(()=>{
             if(u.role==='admin')return'';
             if(!u.expires_at)return'<span class="bdg" style="background:#DCFCE7;color:#166534">✓ Vitalício</span>';
