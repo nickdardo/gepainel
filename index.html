@@ -2,14 +2,10 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GEPainel — Aviso de Migração</title>
-<meta name="description" content="O GEPainel agora é nkFinance">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>GEPainel</title>
 <meta name="theme-color" content="#EA580C">
-<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-<link rel="manifest" href="/icons/site.webmanifest">
+<link rel="icon" href="/icons/favicon.ico">
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/themes.css">
@@ -18,131 +14,57 @@
 <link rel="stylesheet" href="/css/login.css">
 <link rel="stylesheet" href="/css/responsive.css">
 <style>
-:root{--gold-100:#f3d97a;--gold-200:#e6c247;--gold-300:#d4af37;--gold-400:#c99a2a;--gold-500:#8a7d5a;--gold-bg-faint:rgba(212,175,55,0.08);--gold-bg-soft:rgba(212,175,55,0.15);--gold-border:rgba(212,175,55,0.35);--gold-border-strong:rgba(212,175,55,0.5);--bg-deep:#0a0805;--bg-warm:#1a1408;--card-grad-top:rgba(40,30,10,0.6);--card-grad-bottom:rgba(20,15,5,0.92);--text-primary:#fff;--text-body:#d8d3c4;--text-muted:#8a7d5a;--success:#6fd97a;--success-bg:rgba(30,80,40,0.18);--success-border:rgba(80,180,100,0.3);--success-text:#c9e8c9}
-#migration-notice{position:fixed;inset:0;background:radial-gradient(ellipse at top,var(--bg-warm) 0%,var(--bg-deep) 60%,#000 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10000;transition:opacity .3s,visibility .3s}
+:root{--gold-100:#f3d97a;--gold-200:#e6c247;--gold-300:#d4af37;--gold-400:#c99a2a;--text-primary:#fff;--text-body:#d8d3c4;--text-muted:#8a7d5a;--success:#6fd97a;--success-bg:rgba(30,80,40,.18);--success-border:rgba(80,180,100,.3);--success-text:#c9e8c9}
+#migration-notice{position:fixed;inset:0;background:radial-gradient(ellipse at top,#1a1408 0%,#0a0805 60%,#000 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10000;transition:opacity .3s,visibility .3s}
 #migration-notice.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#migration-notice::before{content:"";position:fixed;inset:0;background-image:radial-gradient(1px 1px at 20% 30%,rgba(212,175,55,0.18),transparent),radial-gradient(1px 1px at 70% 20%,rgba(212,175,55,0.12),transparent),radial-gradient(1px 1px at 85% 70%,rgba(212,175,55,0.15),transparent),radial-gradient(1px 1px at 15% 80%,rgba(212,175,55,0.10),transparent),radial-gradient(1px 1px at 50% 50%,rgba(212,175,55,0.08),transparent);pointer-events:none}
-.migration-card{position:relative;z-index:1;width:100%;max-width:480px;background:linear-gradient(180deg,var(--card-grad-top) 0%,var(--card-grad-bottom) 100%);border:1px solid var(--gold-border);border-radius:20px;padding:32px 28px;box-shadow:0 0 40px rgba(212,175,55,0.08),0 20px 60px rgba(0,0,0,0.6);animation:fadeInUp .6s ease-out}
+.migration-card{position:relative;z-index:1;width:100%;max-width:480px;background:linear-gradient(180deg,rgba(40,30,10,.6) 0%,rgba(20,15,5,.92) 100%);border:1px solid rgba(212,175,55,.35);border-radius:20px;padding:32px 28px;box-shadow:0 0 40px rgba(212,175,55,.08),0 20px 60px rgba(0,0,0,.6);animation:fadeInUp .6s}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.header{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px}
-.header__icon{flex-shrink:0;width:48px;height:48px;border-radius:12px;background:var(--gold-bg-faint);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center}
-.header__icon svg{width:24px;height:24px;color:var(--gold-300)}
-.header__content{flex:1;min-width:0}
-.header__badge{display:inline-block;background:var(--gold-bg-soft);border:1px solid var(--gold-border);color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;padding:4px 10px;border-radius:6px;margin-bottom:8px;text-transform:uppercase}
+.header{display:flex;gap:14px;margin-bottom:22px}
+.header__icon{width:48px;height:48px;border-radius:12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.35);display:flex;align-items:center;justify-content:center}
+.header__badge{display:inline-block;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.35);color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;padding:4px 10px;border-radius:6px;margin-bottom:8px;text-transform:uppercase}
 .header__title{color:var(--text-primary);font-size:17px;font-weight:500;line-height:1.35}
-.header__title strong{color:var(--gold-300);font-weight:600}
 .intro{color:var(--text-body);font-size:13.5px;line-height:1.65;margin-bottom:16px}
-.intro strong{color:var(--gold-300);font-weight:500}
 .security-badge{display:flex;align-items:center;gap:10px;background:var(--success-bg);border:1px solid var(--success-border);border-radius:10px;padding:11px 13px;margin-bottom:22px}
-.security-badge svg{flex-shrink:0;width:20px;height:20px;color:var(--success)}
-.security-badge p{color:var(--success-text);font-size:12.5px;line-height:1.45}
-.security-badge strong{color:var(--success);font-weight:600}
-.steps{background:rgba(0,0,0,0.35);border:1px solid rgba(212,175,55,0.18);border-radius:12px;padding:16px 18px;margin-bottom:20px}
-.steps__title{color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;margin-bottom:14px;text-transform:uppercase}
+.steps{background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.18);border-radius:12px;padding:16px 18px;margin-bottom:20px}
 .step{display:flex;gap:12px;margin-bottom:11px}
-.step:last-child{margin-bottom:0}
-.step__num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--gold-300);color:var(--bg-warm);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.step__text{color:var(--text-body);font-size:13.5px;line-height:1.5;padding-top:2px}
-.step__text strong{color:var(--text-primary);font-weight:500}
-.step__text a{color:var(--gold-300);font-weight:500;text-decoration:none}
-.step__text a:hover{text-decoration:underline}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s ease;border:none;font-family:inherit;text-decoration:none}
-.btn--primary{background:linear-gradient(180deg,var(--gold-200) 0%,var(--gold-400) 100%);color:var(--bg-warm);margin-bottom:10px}
-.btn--primary:hover{background:linear-gradient(180deg,var(--gold-100) 0%,var(--gold-300) 100%);transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,175,55,0.25)}
-.btn--secondary{background:transparent;border:1px solid var(--gold-border-strong);color:var(--text-body);font-weight:500;margin-bottom:14px}
-.btn--secondary:hover{background:var(--gold-bg-faint);color:var(--text-primary)}
-.btn--ghost{background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--text-body);font-weight:500;margin-bottom:16px}
-.btn--ghost:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.25);color:var(--text-primary)}
-.btn__icon{width:18px;height:18px;flex-shrink:0}
-.message-preview{background:rgba(0,0,0,0.4);border:1px solid rgba(212,175,55,0.18);border-radius:10px;padding:14px 16px;margin:-6px 0 14px;font-size:12.5px;line-height:1.55;color:var(--text-body);white-space:pre-line;display:none}
-.message-preview.is-open{display:block}
-.message-preview__label{display:block;color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase}
-.chevron{display:inline-block;transition:transform .2s ease;width:12px;height:12px}
-.btn--secondary[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+.step__num{width:24px;height:24px;border-radius:50%;background:var(--gold-300);color:#1a1408;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn--primary{background:linear-gradient(180deg,var(--gold-200),var(--gold-400));color:#1a1408;margin-bottom:10px}
+.btn--ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--text-body);margin-bottom:16px}
 .divider{display:flex;align-items:center;gap:12px;margin:14px 0}
-.divider__line{flex:1;height:1px;background:rgba(212,175,55,0.2)}
-.divider__text{color:var(--text-muted);font-size:11px;text-transform:lowercase}
-.footer{text-align:center;color:var(--text-muted);font-size:11.5px;margin-top:4px}
-.footer a{color:var(--gold-300);font-weight:600;text-decoration:none}
-.footer a:hover{text-decoration:underline}
-@media(max-width:520px){#migration-notice{padding:12px}.migration-card{padding:26px 22px;border-radius:16px}.header__title{font-size:16px}.intro,.step__text{font-size:13px}}
-.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold-300);outline-offset:2px}
+.divider__line{flex:1;height:1px;background:rgba(212,175,55,.2)}
+@media(max-width:520px){.migration-card{padding:26px 22px}}
 </style>
 </head>
 <body class="dark">
 
-<!-- Aviso de Migração -->
 <div id="migration-notice">
-  <main class="migration-card" role="dialog" aria-labelledby="migration-title">
-    <header class="header">
-      <div class="header__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 9v4"/><path d="M10.363 3.591L2.257 17.125a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636-2.87L13.637 3.59a1.914 1.914 0 0 0-3.274 0z"/><path d="M12 16h.01"/>
-        </svg>
-      </div>
+  <div class="migration-card">
+    <div class="header">
+      <div class="header__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M10.363 3.591L2.257 17.125a1.914 1.914 0 001.636 2.871h16.214a1.914 1.914 0 001.636-2.87L13.637 3.59a1.914 1.914 0 00-3.274 0z"/><path d="M12 16h.01"/></svg></div>
       <div class="header__content">
         <span class="header__badge">Aviso importante de migração</span>
-        <h1 id="migration-title" class="header__title">O GEPainel evoluiu — agora somos <strong>nkFinance</strong></h1>
+        <h1 class="header__title">O GEPainel evoluiu — agora somos <strong>nkFinance</strong></h1>
       </div>
-    </header>
-
+    </div>
     <p class="intro">Senhores clientes, demos um passo importante na evolução do nosso sistema! O GEPainel foi modernizado e agora se chama <strong>nkFinance</strong> — uma plataforma mais rápida, segura e completa para a gestão dos seus empréstimos.</p>
-
     <div class="security-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
       <p><strong>Migração 100% segura</strong> — todos os seus dados, clientes e empréstimos foram preservados.</p>
     </div>
-
-    <section class="steps" aria-labelledby="steps-title">
-      <h2 id="steps-title" class="steps__title">Como acessar seus dados</h2>
-      <div class="step">
-        <div class="step__num" aria-hidden="true">1</div>
-        <p class="step__text">Acesse <a href="https://nkfinance.app" target="_blank" rel="noopener">nkfinance.app</a> no navegador</p>
-      </div>
-      <div class="step">
-        <div class="step__num" aria-hidden="true">2</div>
-        <p class="step__text">Faça o login com o <strong>mesmo ID</strong> que usava aqui</p>
-      </div>
-      <div class="step">
-        <div class="step__num" aria-hidden="true">3</div>
-        <p class="step__text">Solicite sua <strong>senha temporária</strong> pelo WhatsApp abaixo</p>
-      </div>
-    </section>
-
-    <a id="btnWhatsApp" class="btn btn--primary" href="#" target="_blank" rel="noopener">
-      <svg class="btn__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.057 22a9.93 9.93 0 01-5.061-1.378l-.362-.215-3.751.984 1.005-3.654-.236-.375A9.94 9.94 0 012.103 12c0-5.486 4.464-9.95 9.954-9.95 2.658 0 5.156 1.036 7.034 2.916a9.88 9.88 0 012.91 7.037c-.002 5.486-4.466 9.95-9.944 9.95M20.52 3.449C18.24 1.245 15.24.029 12.05.029 5.495.029.16 5.355.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.327 11.893-11.866 0-3.181-1.26-6.166-3.422-8.479"/>
-      </svg>
-      Solicitar senha temporária via WhatsApp
-    </a>
-
-    <button id="btnPreview" class="btn btn--secondary" type="button" aria-expanded="false" aria-controls="messagePreview">
-      Ver mensagem que será enviada
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </button>
-
-    <div id="messagePreview" class="message-preview" role="region" aria-label="Pré-visualização da mensagem">
-      <span class="message-preview__label">Mensagem que será enviada</span>
-      <span id="messageText"></span>
+    <div class="steps">
+      <h2 style="color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;margin-bottom:14px;text-transform:uppercase">Como acessar seus dados</h2>
+      <div class="step"><div class="step__num">1</div><p style="color:var(--text-body);font-size:13.5px">Acesse <strong>nkfinance.app</strong> no navegador</p></div>
+      <div class="step"><div class="step__num">2</div><p style="color:var(--text-body);font-size:13.5px">Faça o login com o <strong>mesmo ID</strong> que usava aqui</p></div>
+      <div class="step"><div class="step__num">3</div><p style="color:var(--text-body);font-size:13.5px">Solicite sua <strong>senha temporária</strong> pelo WhatsApp abaixo</p></div>
     </div>
-
-    <div class="divider" aria-hidden="true">
-      <div class="divider__line"></div>
-      <span class="divider__text">ou</span>
-      <div class="divider__line"></div>
-    </div>
-
-    <button id="btnContinue" class="btn btn--ghost" onclick="showLoginForm()">› Continuar acessando o GEPainel</button>
-
-    <p class="footer">Suporte: <a href="https://wa.me/5591985919201">(91) 98591-9201</a></p>
-  </main>
+    <a class="btn btn--primary" href="https://wa.me/5591985919201">Solicitar senha temporária via WhatsApp</a>
+    <div class="divider"><div class="divider__line"></div><span style="color:var(--text-muted);font-size:11px">ou</span><div class="divider__line"></div></div>
+    <button class="btn btn--ghost" onclick="showLoginForm()">› Continuar acessando o GEPainel</button>
+    <p style="text-align:center;color:var(--text-muted);font-size:11.5px;margin-top:4px">Suporte: <a href="https://wa.me/5591985919201" style="color:var(--gold-300);font-weight:600;text-decoration:none">(91) 98591-9201</a></p>
+  </div>
 </div>
 
-<!-- Login Page -->
 <div id="login-page" class="login-bg" style="display:none">
   <canvas id="stars-canvas"></canvas>
   <div class="login-bg-glow"></div>
@@ -153,26 +75,20 @@
           <h1 class="login-logo">GE<span>Painel</span></h1>
           <p class="login-sub">Gestão de Empréstimos</p>
           <div id="login-error" class="login-error"></div>
-          <div class="login-field">
-            <label>Usuário ou e-mail</label>
-            <input type="text" id="lu" autocomplete="username" spellcheck="false">
-          </div>
-          <div class="login-field">
-            <label>Senha</label>
-            <input type="password" id="lp" autocomplete="current-password">
-          </div>
+          <div class="login-field"><label>Usuário ou e-mail</label><input type="text" id="lu" autocomplete="username"></div>
+          <div class="login-field"><label>Senha</label><input type="password" id="lp" autocomplete="current-password"></div>
           <div style="display:flex;align-items:center;gap:8px;margin:1rem 0">
             <div id="remember-toggle" onclick="toggleRemember()" style="width:44px;height:24px;background:#D1D5DB;border-radius:999px;position:relative;cursor:pointer;transition:all .2s">
               <div id="remember-knob" style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:all .2s"></div>
             </div>
-            <label onclick="toggleRemember()" style="font-size:13px;color:var(--n3);cursor:pointer">Lembrar acesso</label>
+            <label onclick="toggleRemember()" style="font-size:13px;cursor:pointer">Lembrar acesso</label>
             <span id="remember-status" style="font-size:11px;margin-left:4px"></span>
           </div>
-          <button id="login-btn" onclick="doLogin()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:15px;cursor:pointer;margin-bottom:1.5rem">Entrar →</button>
+          <button id="login-btn" onclick="doLogin()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;cursor:pointer;margin-bottom:1.5rem">Entrar →</button>
           <div class="login-hint">
-            <a href="javascript:void(0)" onclick="openEsqueciSenha()" style="color:var(--n3);text-decoration:none">Esqueci minha senha</a>
-            <span style="color:var(--n5);margin:0 6px">·</span>
-            <a href="javascript:void(0)" onclick="showRegister()" style="color:var(--n3);text-decoration:none">Criar conta</a>
+            <a href="javascript:void(0)" onclick="openEsqueciSenha()">Esqueci minha senha</a>
+            <span> · </span>
+            <a href="javascript:void(0)" onclick="showRegister()">Criar conta</a>
           </div>
         </div>
         <div id="register-panel" style="display:none">
@@ -180,13 +96,13 @@
           <p class="login-sub">Criar conta — 30 dias grátis</p>
           <div id="reg-error" class="login-error"></div>
           <div class="login-field"><label>Nome completo</label><input type="text" id="reg-nome"></div>
-          <div class="login-field"><label>Usuário (login)</label><input type="text" id="reg-login" spellcheck="false"></div>
-          <div class="login-field"><label>E-mail</label><input type="email" id="reg-email" autocomplete="email"></div>
-          <div class="login-field"><label>Senha (mínimo 4 caracteres)</label><input type="password" id="reg-pass" autocomplete="new-password"></div>
-          <div class="login-field"><label>Confirme a senha</label><input type="password" id="reg-pass2" autocomplete="new-password"></div>
-          <div class="login-field"><label>Código de indicação (opcional)</label><input type="text" id="reg-indicacao" placeholder="XXXXXXXX" style="text-transform:uppercase"></div>
-          <button id="register-btn" onclick="doRegister()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:15px;cursor:pointer;margin-bottom:1.5rem">Criar conta →</button>
-          <div class="login-hint"><a href="javascript:void(0)" onclick="showLogin()" style="color:var(--n3);text-decoration:none">← Voltar ao login</a></div>
+          <div class="login-field"><label>Usuário</label><input type="text" id="reg-login"></div>
+          <div class="login-field"><label>E-mail</label><input type="email" id="reg-email"></div>
+          <div class="login-field"><label>Senha</label><input type="password" id="reg-pass"></div>
+          <div class="login-field"><label>Confirme a senha</label><input type="password" id="reg-pass2"></div>
+          <div class="login-field"><label>Código de indicação (opcional)</label><input type="text" id="reg-indicacao"></div>
+          <button id="register-btn" onclick="doRegister()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;cursor:pointer;margin-bottom:1.5rem">Criar conta →</button>
+          <div class="login-hint"><a href="javascript:void(0)" onclick="showLogin()">← Voltar</a></div>
         </div>
       </div>
     </div>
@@ -195,19 +111,20 @@
 
 <div id="esqueci-senha-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEsqueciSenha()">
   <div class="modal-box" style="max-width:400px;padding:2rem">
-    <h3 style="margin:0 0 .5rem;font-size:1.25rem">Recuperar senha</h3>
-    <p style="color:var(--n4);font-size:13px;margin:0 0 1.5rem">Informe seu login ou e-mail.</p>
-    <div id="esqueci-error" class="auth-error" style="margin-bottom:1rem"></div>
-    <input type="text" id="esqueci-input" placeholder="Login ou e-mail" style="width:100%;padding:.75rem;border:1px solid var(--n8);border-radius:var(--rs);margin-bottom:1rem">
+    <h3>Recuperar senha</h3>
+    <p style="font-size:13px;margin-bottom:1.5rem">Informe seu login ou e-mail.</p>
+    <div id="esqueci-error" style="margin-bottom:1rem"></div>
+    <input type="text" id="esqueci-input" placeholder="Login ou e-mail" style="width:100%;padding:.75rem;margin-bottom:1rem">
     <div style="display:flex;gap:8px">
-      <button onclick="closeEsqueciSenha()" style="flex:1;padding:.75rem;background:transparent;border:1px solid var(--n8);color:var(--n3);border-radius:var(--rm);cursor:pointer;font-weight:500">Cancelar</button>
-      <button id="esqueci-btn" onclick="enviarRecuperacaoSenha()" style="flex:1;padding:.75rem;background:var(--org);color:#fff;border:none;border-radius:var(--rm);cursor:pointer;font-weight:600">Enviar →</button>
+      <button onclick="closeEsqueciSenha()" style="flex:1;padding:.75rem;cursor:pointer">Cancelar</button>
+      <button id="esqueci-btn" onclick="enviarRecuperacaoSenha()" style="flex:1;padding:.75rem;background:#EA580C;color:#fff;border:none;cursor:pointer">Enviar</button>
     </div>
   </div>
 </div>
 
 <div id="app-page" style="display:none">
-  <nav class="sidebar" id="sidebar"></nav>
+  <div id="sb-overlay" onclick="closeSidebar()"></div>
+  <nav class="sidebar" id="sidebarEl"></nav>
   <div class="app-body">
     <header class="topbar">
       <button class="menu-btn" onclick="toggleSidebar()"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
@@ -219,7 +136,7 @@
     </header>
     <main class="content" id="main-content"></main>
   </div>
-  <nav id="bottom-nav" class="bottom-nav"></nav>
+  <nav id="bottom-nav" class="bottom-nav"><div id="bottom-nav-items"></div></nav>
 </div>
 
 <div id="gsearch-ov" class="gsearch-overlay">
@@ -233,31 +150,12 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// Logout forçado
 try{localStorage.removeItem('ep_s');localStorage.removeItem('ep_cred')}catch(e){}
 try{document.cookie='ep_s=;path=/;max-age=0'}catch(e){}
-
-// Prevenir auto-login - flag para init.js
-window._skipAutoLogin=true;
-
-// Config aviso
-const CONFIG={whatsappNumber:'5591985919201',message:'Olá! Sou cliente do GEPainel e gostaria de solicitar uma senha temporária para acessar minha conta no novo sistema nkFinance.\n\nMeu usuário/e-mail é: ______________\n\nObrigado!'};
-document.getElementById('btnWhatsApp').href='https://wa.me/'+CONFIG.whatsappNumber+'?text='+encodeURIComponent(CONFIG.message);
-document.getElementById('messageText').textContent=CONFIG.message;
-document.getElementById('btnPreview').addEventListener('click',()=>{
-  const p=document.getElementById('messagePreview');
-  const isOpen=p.classList.toggle('is-open');
-  document.getElementById('btnPreview').setAttribute('aria-expanded',String(isOpen));
-});
-
-// Mostrar login
 function showLoginForm(){
-  const notice=document.getElementById('migration-notice');
-  notice.classList.add('hidden');
-  setTimeout(()=>{
-    notice.remove(); // Remove completamente do DOM
-    document.getElementById('login-page').style.display='';
-  },300);
+  const n=document.getElementById('migration-notice');
+  n.classList.add('hidden');
+  setTimeout(()=>{n.remove();document.getElementById('login-page').style.display=''},300);
 }
 </script>
 
@@ -283,18 +181,5 @@ function showLoginForm(){
 <script src="/js/simulador.js"></script>
 <script src="/js/indicacao.js"></script>
 <script src="/js/pwa.js"></script>
-
-<script>
-// Override do init para não fazer auto-login
-// O init.js original tenta fazer auto-login no DOMContentLoaded
-// Mas queremos mostrar o aviso primeiro
-document.addEventListener('DOMContentLoaded',()=>{
-  // Garante que migration-notice está visível
-  if(!document.getElementById('migration-notice').classList.contains('hidden')){
-    // Se aviso está visível, não faz nada
-    // Usuário precisa clicar em "Continuar" primeiro
-  }
-},true); // true = captura, roda antes dos outros listeners
-</script>
 </body>
 </html>
