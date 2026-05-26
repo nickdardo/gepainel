@@ -106,7 +106,7 @@ function renderPerfil(){
     :`<span style="font-size:2rem;font-weight:700">${ini(session.nome)}</span>`;
   const avStyle=session.avatar_url?'background:transparent':'background:#FFF7ED';
   mc.innerHTML=`
-    <div class="sec-hdr"><span class="sec-title">Meu Perfil</span><button class="btn btn-grn btn-sm" onclick="abrirIndicacao()">🎁 Indicar amigo</button></div>
+    <div class="sec-hdr"><span class="sec-title">Meu Perfil</span><div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn btn-grn btn-sm" onclick="abrirIndicacao()">🎁 Indicar amigo</button><button class="btn btn-sm" onclick="exportarParaNkFinance()" style="background:#1D4ED8;color:#fff;border:none;display:flex;align-items:center;gap:.35rem" title="Exporta seus dados em JSON para importação no nkFinance"><svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg> Exportar para nkFinance</button></div></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:800px" class="perfil-grid">
       <div class="card">
         <div class="card-title">Foto de Perfil</div>
@@ -290,3 +290,128 @@ async function savePerfilSenha(){
   toast('✓ Senha alterada com sucesso!');
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+// EXPORTAR PARA nkFINANCE
+// Busca direto no Supabase (não usa cache em memória) para garantir
+// que parcelas pagas e dados recentes estejam incluídos.
+// Gera: nkfinance-export-NOME-DATA.json
+// ════════════════════════════════════════════════════════════════
+
+async function exportarParaNkFinance() {
+  const btn = document.querySelector('[onclick="exportarParaNkFinance()"]');
+  const labelOriginal = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = 'Buscando dados...'; btn.disabled = true; }
+
+  try {
+    // ── 1. Tomadores ──────────────────────────────────────────
+    const { data: rawTomadores, error: errTom } = await sb
+      .from('tomadores')
+      .select('id, nome, contato, ocupacao, owner_id')
+      .eq('owner_id', session.id)
+      .order('nome');
+
+    if (errTom) throw new Error('Erro ao buscar clientes: ' + errTom.message);
+
+    // ── 2. Empréstimos ────────────────────────────────────────
+    const { data: rawEmprestimos, error: errEmp } = await sb
+      .from('emprestimos')
+      .select('id, tomador_id, valor, juros, tipo, data_emprestimo, parcelas, saldo_devedor, status, garantia, local, responsavel, owner_id')
+      .eq('owner_id', session.id)
+      .order('data_emprestimo', { ascending: false });
+
+    if (errEmp) throw new Error('Erro ao buscar empréstimos: ' + errEmp.message);
+
+    // ── 3. Parcelas (via lista de IDs dos empréstimos) ────────
+    let rawParcelas = [];
+    if (rawEmprestimos.length > 0) {
+      const empIds = rawEmprestimos.map(e => e.id);
+
+      // Supabase limita o .in() a ~100 itens; divide em lotes se necessário
+      const LOTE = 100;
+      for (let i = 0; i < empIds.length; i += LOTE) {
+        const lote = empIds.slice(i, i + LOTE);
+        const { data: loteParc, error: errParc } = await sb
+          .from('parcelas')
+          .select('id, emprestimo_id, numero, valor, vencimento, status, pago_em, valor_pago, abatimento')
+          .in('emprestimo_id', lote)
+          .order('emprestimo_id')
+          .order('numero');
+
+        if (errParc) throw new Error('Erro ao buscar parcelas: ' + errParc.message);
+        rawParcelas = rawParcelas.concat(loteParc || []);
+      }
+    }
+
+    // ── 4. Montar JSON no formato nkFinance ───────────────────
+    const nomeArquivo = (session.nome || session.login || 'credor')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+      .replace(/\s+/g, '-')
+      .toUpperCase();
+
+    const payload = {
+      versao: 'nkfinance-v1',
+      exportado_em: new Date().toISOString(),
+      credor: {
+        nome: session.nome  || null,
+        email: session.email || null
+      },
+      clientes: rawTomadores.map(t => ({
+        id_origem:  t.id,
+        nome:       t.nome       || null,
+        contato:    t.contato    || null,
+        ocupacao:   t.ocupacao   || null,
+        endereco:   null  // GEPainel não possui este campo
+      })),
+      emprestimos: rawEmprestimos.map(e => ({
+        id_origem:          e.id,
+        cliente_id_origem:  e.tomador_id,
+        valor:              e.valor              ?? null,
+        juros:              e.juros              ?? null,
+        tipo:               e.tipo               || 'juros',
+        data_emprestimo:    e.data_emprestimo    || null,
+        parcelas:           e.parcelas           ?? null,
+        saldo_devedor:      e.saldo_devedor      ?? null,
+        status:             e.status             || 'ativo',
+        garantia:           e.garantia           || null,
+        local:              e.local              || null,
+        responsavel:        e.responsavel        || null
+      })),
+      parcelas: rawParcelas.map(p => ({
+        id_origem:             p.id,
+        emprestimo_id_origem:  p.emprestimo_id,
+        numero:                p.numero          ?? null,
+        valor:                 p.valor           ?? null,
+        vencimento:            p.vencimento      || null,
+        status:                p.status          || 'pendente',
+        pago_em:               p.pago_em         || null,
+        valor_pago:            p.valor_pago      ?? null,
+        abatimento:            p.abatimento      ?? null
+      }))
+    };
+
+    // ── 5. Download ───────────────────────────────────────────
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `nkfinance-export-${nomeArquivo}-${today()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 300);
+
+    toast(
+      `✓ Exportado! ${payload.clientes.length} clientes · ` +
+      `${payload.emprestimos.length} empréstimos · ` +
+      `${payload.parcelas.length} parcelas`
+    );
+
+  } catch (err) {
+    console.error('[exportarParaNkFinance]', err);
+    toast('⚠ ' + (err.message || 'Erro ao exportar dados.'), true);
+  } finally {
+    if (btn) { btn.innerHTML = labelOriginal; btn.disabled = false; }
+  }
+}
