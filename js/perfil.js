@@ -321,6 +321,7 @@ async function exportarParaNkFinance() {
       .eq('owner_id', session.id)
       .order('data_emprestimo', { ascending: false });
 
+    console.log('[nkFinance Export] Empréstimos:', rawEmprestimos?.length, 'erro:', errEmp?.message);
     if (errEmp) throw new Error('Erro ao buscar empréstimos: ' + errEmp.message);
 
     // ── 3. Parcelas (via lista de IDs dos empréstimos) ────────
@@ -391,6 +392,7 @@ async function exportarParaNkFinance() {
       }))
     };
 
+    console.log('[nkFinance Export] Payload pronto:', payload.clientes.length, 'clientes,', payload.emprestimos.length, 'emp,', payload.parcelas.length, 'parcelas');
     // ── 5. Download ───────────────────────────────────────────
     const json = JSON.stringify(payload, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
