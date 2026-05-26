@@ -1,5 +1,6 @@
 // ════════════════════════════════════════════════════════════════
 // USUARIOS — Administração: CRUD usuários e renovações
+// MODIFICADO COM RECURSO DE RESET DE SENHA PARA MIGRAÇÃO
 // ════════════════════════════════════════════════════════════════
 
 // ══ USUÁRIOS ══
@@ -116,6 +117,21 @@ function openUsrModal(id){
   document.getElementById('um-pass').value='';document.getElementById('um-pass2').value='';
   document.getElementById('um-pass').placeholder=editUsr?'Deixe em branco para não alterar':'Mínimo 4 caracteres';
   document.getElementById('um-p2w').style.display=editUsr?'none':'flex';
+  
+  // ── RESET DE SENHA: mostra/oculta seção ────────────────────────
+  const resetSection = document.getElementById('password-reset-section');
+  const senhaContainer = document.getElementById('senha-temp-container');
+  if(resetSection) {
+    // Só mostra para usuários existentes que são operadores
+    if(editUsr && editUsr.role === 'op') {
+      resetSection.style.display = 'block';
+      if(senhaContainer) senhaContainer.style.display = 'none'; // Reset ao abrir
+    } else {
+      resetSection.style.display = 'none';
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────
+  
   // Acesso
   const acessoSel=document.getElementById('um-acesso');
   const acessoInfo=document.getElementById('um-acesso-info');
@@ -178,6 +194,53 @@ async function deleteUsr(id){
   users=users.filter(x=>x.id!==id);toast('Usuário removido');renderUsuarios();
 }
 
+// ════════════════════════════════════════════════════════════════
+// RESET DE SENHA PARA MIGRAÇÃO
+// ════════════════════════════════════════════════════════════════
 
+async function gerarSenhaTemporaria() {
+  if(!editUsr) return;
+  
+  if(!confirm(`Gerar senha temporária para "${editUsr.nome}"?\n\nIsso irá substituir a senha atual.`)) return;
+  
+  // Gera senha: nk2026 + 4 dígitos aleatórios
+  const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  const senhaTemp = `nk2026${randomDigits}`;
+  
+  try {
+    // Atualiza no banco (hp() é a função de hash que já existe no código)
+    const { error } = await sb.from('users')
+      .update({ pass_hash: hp(senhaTemp) })
+      .eq('id', editUsr.id);
+    
+    if(error) throw error;
+    
+    // Exibe a senha gerada
+    const container = document.getElementById('senha-temp-container');
+    const input = document.getElementById('senha-temp-value');
+    
+    if(container && input) {
+      input.value = senhaTemp;
+      container.style.display = 'block';
+      
+      // Seleciona automaticamente
+      setTimeout(() => input.select(), 100);
+      
+      toast(`✓ Senha temporária gerada: ${senhaTemp}`);
+    }
+    
+  } catch(e) {
+    console.error('[gerarSenhaTemporaria]', e);
+    toast('Erro ao gerar senha: ' + e.message, true);
+  }
+}
 
-
+function copiarSenha() {
+  const input = document.getElementById('senha-temp-value');
+  if(!input) return;
+  
+  input.select();
+  document.execCommand('copy');
+  
+  toast('✓ Senha copiada!');
+}
