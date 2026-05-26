@@ -43,280 +43,135 @@
 <link rel="stylesheet" href="/css/components.css"/>
 <link rel="stylesheet" href="/css/themes.css"/>
 <link rel="stylesheet" href="/css/responsive.css"/>
+
+<!-- ═══ MODAL MIGRAÇÃO nkFinance — CSS ═══ -->
+<style>
+/* ── Overlay ── */
+#nkf-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(6,4,16,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:nkfFadeIn .3s ease both}
+@keyframes nkfFadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── Card ── */
+#nkf-overlay .nkf-modal{
+  background:linear-gradient(160deg,#1a1428 0%,#110e20 60%,#0d0b1a 100%);
+  border:1px solid rgba(212,175,55,.35);
+  border-radius:20px;
+  padding:2.25rem 2rem 2rem;
+  max-width:460px;
+  width:100%;
+  max-height:92vh;
+  overflow-y:auto;
+  position:relative;
+  box-shadow:0 0 0 1px rgba(212,175,55,.12),0 32px 80px rgba(0,0,0,.65),inset 0 1px 0 rgba(212,175,55,.08);
+  animation:nkfScaleIn .4s cubic-bezier(.16,1,.3,1) both
+}
+@keyframes nkfScaleIn{from{opacity:0;transform:scale(.94) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* Barra topo dourada */
+#nkf-overlay .nkf-modal::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;
+  background:linear-gradient(90deg,transparent,#D4AF37 30%,#F5D060 60%,transparent)
+}
+
+/* ── Ícone de aviso (SVG, sem emoji) ── */
+#nkf-overlay .nkf-badge{
+  width:52px;height:52px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));
+  border:1px solid rgba(212,175,55,.3);
+  display:flex;align-items:center;justify-content:center
+}
+#nkf-overlay .nkf-badge svg{color:#D4AF37}
+
+/* ── Header ── */
+#nkf-overlay .nkf-hdr{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+#nkf-overlay .nkf-tag{
+  font-size:.6rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:#D4AF37;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);
+  border-radius:5px;padding:.18rem .55rem;display:inline-block;margin-bottom:.35rem
+}
+#nkf-overlay .nkf-title{font-size:1.05rem;font-weight:700;color:#F0E6C0;line-height:1.25;margin:0;letter-spacing:.01em}
+
+/* ── Divisor ── */
+#nkf-overlay .nkf-div{height:1px;background:linear-gradient(90deg,rgba(212,175,55,.35),transparent);margin:0 0 1.4rem}
+
+/* ── Bloco de passos ── */
+#nkf-overlay .nkf-steps{
+  background:rgba(255,255,255,.03);border:1px solid rgba(212,175,55,.15);
+  border-radius:12px;padding:1.1rem 1.15rem;margin-bottom:1.4rem
+}
+#nkf-overlay .nkf-steps-ttl{
+  font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(212,175,55,.7);margin:0 0 .9rem
+}
+#nkf-overlay .nkf-step{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.7rem}
+#nkf-overlay .nkf-step:last-child{margin-bottom:0}
+#nkf-overlay .nkf-num{
+  min-width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  background:linear-gradient(135deg,#D4AF37,#B8860B);color:#0d0b1a;
+  font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center
+}
+#nkf-overlay .nkf-txt{font-size:.88rem;color:rgba(240,230,192,.75);line-height:1.5;margin:0}
+#nkf-overlay .nkf-txt strong{color:#F0E6C0;font-weight:600}
+#nkf-overlay .nkf-txt a{color:#D4AF37;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(212,175,55,.4)}
+#nkf-overlay .nkf-txt a:hover{border-bottom-color:#D4AF37}
+
+/* ── Botão WhatsApp ── */
+#nkf-overlay .nkf-wa{
+  display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;
+  padding:.9rem 1.4rem;
+  background:linear-gradient(135deg,#D4AF37 0%,#F5D060 50%,#D4AF37 100%);
+  background-size:200% 100%;
+  color:#0d0b1a;font-size:.9rem;font-weight:700;text-decoration:none;
+  border-radius:12px;border:none;cursor:pointer;letter-spacing:.03em;
+  transition:background-position .3s ease,transform .14s,box-shadow .18s;
+  box-shadow:0 4px 20px rgba(212,175,55,.35);margin-bottom:.9rem
+}
+#nkf-overlay .nkf-wa:hover{background-position:100% 0;transform:translateY(-1px);box-shadow:0 6px 24px rgba(212,175,55,.5)}
+#nkf-overlay .nkf-wa:active{transform:translateY(0)}
+
+/* ── Msg expansível ── */
+#nkf-overlay .nkf-mtgl{
+  font-size:.75rem;color:rgba(212,175,55,.6);text-align:center;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.3rem;
+  user-select:none;padding:.15rem 0 .65rem;transition:color .15s
+}
+#nkf-overlay .nkf-mtgl:hover{color:#D4AF37}
+#nkf-overlay .nkf-arrow{display:inline-block;transition:transform .25s;font-style:normal}
+#nkf-overlay .nkf-mtgl.open .nkf-arrow{transform:rotate(180deg)}
+#nkf-overlay .nkf-mbox{overflow:hidden;max-height:0;transition:max-height .35s ease,opacity .3s ease;opacity:0}
+#nkf-overlay .nkf-mbox.open{max-height:160px;opacity:1;margin-bottom:.9rem}
+#nkf-overlay .nkf-minner{
+  background:rgba(255,255,255,.03);border:1px solid rgba(212,175,55,.2);
+  border-radius:10px;padding:.85rem 1rem;font-size:.8rem;
+  color:rgba(240,230,192,.65);line-height:1.6;font-style:italic
+}
+#nkf-overlay .nkf-minner span{font-style:normal;font-weight:600;color:#D4AF37}
+
+/* ── Separador ── */
+#nkf-overlay .nkf-sep{
+  display:flex;align-items:center;gap:.75rem;
+  margin:.15rem 0 .75rem;color:rgba(212,175,55,.4);font-size:.75rem
+}
+#nkf-overlay .nkf-sep::before,#nkf-overlay .nkf-sep::after{content:'';flex:1;height:1px;background:rgba(212,175,55,.15)}
+
+/* ── Botão GEPainel (secundário) ── */
+#nkf-overlay .nkf-skip{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;
+  padding:.78rem 1.2rem;background:transparent;
+  color:rgba(240,230,192,.5);font-size:.82rem;font-weight:500;
+  border:1px solid rgba(212,175,55,.2);border-radius:12px;cursor:pointer;
+  transition:color .18s,border-color .18s,background .18s;font-family:inherit
+}
+#nkf-overlay .nkf-skip:hover{color:rgba(240,230,192,.8);border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.05)}
+#nkf-overlay .nkf-skip svg{opacity:.5;transition:opacity .18s}
+#nkf-overlay .nkf-skip:hover svg{opacity:.8}
+
+/* ── Rodapé ── */
+#nkf-overlay .nkf-foot{margin-top:1.1rem;text-align:center;font-size:.7rem;color:rgba(212,175,55,.35)}
+#nkf-overlay .nkf-foot strong{color:rgba(212,175,55,.55)}
+</style>
+<!-- ═══ FIM CSS MODAL ═══ -->
 </head>
 <body>
-
-<!-- ════════════════════════════════════════════════════════════════ -->
-<!-- BANNER DE MIGRAÇÃO PARA NKFINANCE                                -->
-<!-- ════════════════════════════════════════════════════════════════ -->
-
-<div id="banner-migracao" style="display:none;">
-  <!-- Modal overlay (blur background) -->
-  <div style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(4px);
-    z-index: 99998;
-    animation: fadeIn 0.3s ease-out;
-  "></div>
-
-  <!-- Modal content -->
-  <div style="
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px;
-    max-width: 560px;
-    width: calc(100% - 2rem);
-    padding: 0;
-    z-index: 99999;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    overflow: hidden;
-  ">
-    
-    <!-- Header gradient -->
-    <div style="
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 2rem;
-      text-align: center;
-    ">
-      <div style="
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem;
-        background: rgba(255,255,255,0.2);
-        border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 40px;
-      ">
-        🚀
-      </div>
-      <h2 style="
-        font-size: 28px;
-        font-weight: 800;
-        color: white;
-        margin: 0 0 0.5rem;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      ">
-        Bem-vindo ao Futuro!
-      </h2>
-      <p style="
-        font-size: 15px;
-        color: rgba(255,255,255,0.9);
-        margin: 0;
-        font-weight: 500;
-      ">
-        Uma nova era para sua gestão financeira
-      </p>
-    </div>
-
-    <!-- Content -->
-    <div style="padding: 2rem;">
-      
-      <!-- Main message -->
-      <div style="
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      ">
-        <p style="
-          font-size: 15px;
-          line-height: 1.7;
-          color: rgba(255,255,255,0.9);
-          margin: 0;
-        ">
-          Migramos todo o sistema para o <strong style="color:#fff;font-weight:700">nkFinance</strong> — uma plataforma completamente renovada, mais rápida, intuitiva e poderosa.
-          <br><br>
-          <strong style="color:#10b981">✓ Seus dados já foram transferidos com segurança.</strong>
-          <br>
-          Experimente agora uma gestão financeira ainda mais profissional.
-        </p>
-      </div>
-
-      <!-- Features -->
-      <div style="
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      ">
-        <div style="
-          background: rgba(16, 185, 129, 0.1);
-          border: 1px solid rgba(16, 185, 129, 0.2);
-          border-radius: 10px;
-          padding: 1rem;
-        ">
-          <div style="font-size:24px;margin-bottom:0.5rem">⚡</div>
-          <div style="font-size:13px;font-weight:700;color:#10b981;margin-bottom:0.25rem">3× Mais Rápido</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7)">Carregamento instantâneo</div>
-        </div>
-        
-        <div style="
-          background: rgba(99, 102, 241, 0.1);
-          border: 1px solid rgba(99, 102, 241, 0.2);
-          border-radius: 10px;
-          padding: 1rem;
-        ">
-          <div style="font-size:24px;margin-bottom:0.5rem">🎨</div>
-          <div style="font-size:13px;font-weight:700;color:#6366f1;margin-bottom:0.25rem">Design Moderno</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7)">Interface redesenhada</div>
-        </div>
-        
-        <div style="
-          background: rgba(236, 72, 153, 0.1);
-          border: 1px solid rgba(236, 72, 153, 0.2);
-          border-radius: 10px;
-          padding: 1rem;
-        ">
-          <div style="font-size:24px;margin-bottom:0.5rem">📊</div>
-          <div style="font-size:13px;font-weight:700;color:#ec4899;margin-bottom:0.25rem">Relatórios Pro</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7)">Análises avançadas</div>
-        </div>
-        
-        <div style="
-          background: rgba(245, 158, 11, 0.1);
-          border: 1px solid rgba(245, 158, 11, 0.2);
-          border-radius: 10px;
-          padding: 1rem;
-        ">
-          <div style="font-size:24px;margin-bottom:0.5rem">🔒</div>
-          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:0.25rem">Segurança Total</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7)">Criptografia avançada</div>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div style="display:flex;flex-direction:column;gap:0.75rem">
-        <button onclick="acessarNkFinance()" style="
-          width: 100%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 1rem 1.5rem;
-          border-radius: 12px;
-          font-weight: 700;
-          font-size: 16px;
-          cursor: pointer;
-          box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.5);
-          transition: all 0.2s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 35px -5px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(102, 126, 234, 0.5)'">
-          ✨ Acessar nkFinance Agora
-        </button>
-        
-        <button onclick="fecharBannerMigracao()" style="
-          width: 100%;
-          background: transparent;
-          color: rgba(255,255,255,0.7);
-          border: 1px solid rgba(255,255,255,0.2);
-          padding: 0.75rem 1.5rem;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.7)'">
-          Continuar no painel antigo
-        </button>
-      </div>
-
-      <!-- Note -->
-      <p style="
-        text-align: center;
-        font-size: 11px;
-        color: rgba(255,255,255,0.5);
-        margin: 1rem 0 0;
-      ">
-        Este sistema será descontinuado em breve
-      </p>
-
-    </div>
-  </div>
-</div>
-
-<style>
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -45%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-@keyframes fadeOut { 
-  from { opacity: 1; } 
-  to { opacity: 0; } 
-}
-
-@media (max-width: 640px) {
-  #banner-migracao > div:last-child {
-    max-width: calc(100% - 1rem);
-    padding: 0;
-  }
-  #banner-migracao > div:last-child > div:first-child {
-    padding: 1.5rem;
-  }
-  #banner-migracao > div:last-child > div:last-child {
-    padding: 1.5rem;
-  }
-  #banner-migracao [style*="grid-template-columns"] {
-    grid-template-columns: 1fr !important;
-  }
-}
-</style>
-
-<script>
-function acessarNkFinance() {
-  localStorage.setItem('nkfinance_migrado', 'true');
-  window.location.href = 'https://nkfinance.app';
-}
-
-function fecharBannerMigracao() {
-  const banner = document.getElementById('banner-migracao');
-  if(!banner) return;
-  banner.style.animation = 'fadeOut 0.3s ease-out';
-  setTimeout(() => {
-    banner.style.display = 'none';
-    sessionStorage.setItem('banner_fechado', 'true');
-  }, 300);
-}
-
-// Exibe o banner automaticamente no carregamento
-window.addEventListener('DOMContentLoaded', () => {
-  const isOperador = window.session && window.session.role !== 'admin';
-  if(isOperador && !sessionStorage.getItem('banner_fechado')) {
-    const banner = document.getElementById('banner-migracao');
-    if(banner) {
-      setTimeout(() => {
-        banner.style.display = 'block';
-      }, 800);
-    }
-  }
-});
-</script>
-
-<!-- ════════════════════════════════════════════════════════════════ -->
-
 
 <!-- LOGIN -->
 <div id="login-page">
@@ -378,8 +233,106 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
     
     </div><!-- /login-card-wrap -->
+
   </div>
 </div>
+
+<!-- ═══ MODAL MIGRAÇÃO nkFinance ═══ -->
+<div id="nkf-overlay" role="dialog" aria-modal="true" aria-label="Aviso de migração para nkFinance">
+  <div class="nkf-modal">
+
+    <!-- Header -->
+    <div class="nkf-hdr">
+      <div class="nkf-badge">
+        <!-- Ícone triângulo de aviso (SVG limpo) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div>
+        <span class="nkf-tag">Aviso de migração</span>
+        <h2 class="nkf-title">O GEPainel migrou para o nkFinance</h2>
+      </div>
+    </div>
+
+    <div class="nkf-div"></div>
+
+    <!-- Passos -->
+    <div class="nkf-steps">
+      <p class="nkf-steps-ttl">Como acessar seus dados</p>
+      <div class="nkf-step">
+        <span class="nkf-num">1</span>
+        <p class="nkf-txt">Acesse <strong><a href="https://nkfinance.app" target="_blank" rel="noopener">nkfinance.app</a></strong> no navegador</p>
+      </div>
+      <div class="nkf-step">
+        <span class="nkf-num">2</span>
+        <p class="nkf-txt">Faça login com o <strong>mesmo e-mail</strong> que você usava aqui</p>
+      </div>
+      <div class="nkf-step">
+        <span class="nkf-num">3</span>
+        <p class="nkf-txt">Se não souber a senha, solicite uma <strong>senha temporária</strong> pelo WhatsApp abaixo</p>
+      </div>
+    </div>
+
+    <!-- Botão WhatsApp -->
+    <a class="nkf-wa"
+       href="https://wa.me/5591985919201?text=Ol%C3%A1!%20Sou%20usu%C3%A1rio%20do%20GEPainel%20e%20preciso%20da%20minha%20senha%20tempor%C3%A1ria%20para%20acessar%20o%20nkFinance.%20Meu%20e-mail%20%C3%A9%3A%20"
+       target="_blank" rel="noopener"
+       aria-label="Solicitar senha temporária via WhatsApp">
+      <!-- Ícone WhatsApp SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.556 4.112 1.528 5.836L.057 23.428a.5.5 0 0 0 .615.615l5.592-1.471A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.9 0-3.68-.512-5.21-1.404l-.374-.22-3.868 1.018 1.018-3.868-.22-.374A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+      </svg>
+      Solicitar senha temporária via WhatsApp
+    </a>
+
+    <!-- Msg expansível -->
+    <div class="nkf-mtgl" role="button" tabindex="0" aria-expanded="false"
+         onclick="nkfToggle(this)" onkeydown="if(event.key==='Enter'||event.key===' ')nkfToggle(this)">
+      <span>Ver mensagem que será enviada</span>
+      <i class="nkf-arrow">▾</i>
+    </div>
+    <div class="nkf-mbox" id="nkf-mbox">
+      <div class="nkf-minner">"Olá! Sou usuário do GEPainel e preciso da minha senha temporária para acessar o nkFinance. Meu e-mail é: <span>[seu e-mail aqui]</span>"</div>
+    </div>
+
+    <!-- Separador -->
+    <div class="nkf-sep">ou</div>
+
+    <!-- Botão secundário: continuar no GEPainel -->
+    <button class="nkf-skip" onclick="nkfDismiss()" aria-label="Continuar acessando o GEPainel">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      Continuar acessando o GEPainel
+    </button>
+
+    <p class="nkf-foot">Suporte: <strong>(91) 98591-9201</strong></p>
+  </div>
+</div>
+<!-- ═══ FIM MODAL ═══ -->
+
+<!-- ═══ SCRIPT MODAL ═══ -->
+<script>
+(function(){
+  // Fechar overlay e revelar login
+  window.nkfDismiss = function(){
+    var o = document.getElementById('nkf-overlay');
+    if(!o) return;
+    o.style.transition = 'opacity .3s ease';
+    o.style.opacity = '0';
+    o.style.pointerEvents = 'none';
+    setTimeout(function(){ o.style.display = 'none'; }, 310);
+  };
+  // Toggle mensagem expansível
+  window.nkfToggle = function(btn){
+    var box = document.getElementById('nkf-mbox');
+    var open = box.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  };
+})();
+</script>
 
 <!-- APP -->
 <div id="app-page" style="display:none;flex-direction:column;min-height:100vh">
@@ -875,30 +828,6 @@ window.addEventListener('DOMContentLoaded', () => {
           </select>
           <div id="um-acesso-info" style="font-size:11px;color:var(--n4);margin-top:4px"></div>
         </div>
-        <!-- RESET DE SENHA PARA MIGRAÇÃO -->
-        <div class="fg full" id="password-reset-section" style="display:none;margin-top:1rem;padding:1rem;background:#FEF3C7;border:1px solid #FDE68A;border-radius:var(--rs)">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:.25rem">Resetar Senha para Migração</div>
-              <div style="font-size:11px;color:#78350F">Gera senha temporária para o credor acessar o nkFinance</div>
-            </div>
-            <button type="button" onclick="event.preventDefault();gerarSenhaTemporaria()" 
-              class="btn btn-sm" style="background:#F59E0B;color:#fff;white-space:nowrap">
-              🔑 Gerar Senha
-            </button>
-          </div>
-          <div id="senha-temp-container" style="display:none;padding:.75rem;background:#fff;border-radius:6px">
-            <div style="font-size:11px;color:#78350F;margin-bottom:.35rem">Senha temporária gerada:</div>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <input type="text" readonly id="senha-temp-value" 
-                style="flex:1;padding:.5rem;border:1px solid #FDE68A;border-radius:4px;font-family:monospace;font-size:15px;font-weight:700;background:#FFFBEB"/>
-              <button onclick="event.preventDefault();copiarSenha()" class="btn btn-sm" style="background:#16A34A;color:#fff">
-                📋 Copiar
-              </button>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
     <div class="mfooter"><button class="btn btn-g btn-sm" onclick="closeM('usr-modal')">Cancelar</button><button class="btn btn-p btn-sm" onclick="saveUsr()">Salvar</button></div>
