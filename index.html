@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>GEPainel</title>
+<title>GEPainel — Gestão de Empréstimos</title>
 <meta name="theme-color" content="#EA580C">
 <link rel="icon" href="/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/icons/site.webmanifest">
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/themes.css">
@@ -13,55 +17,64 @@
 <link rel="stylesheet" href="/css/components.css">
 <link rel="stylesheet" href="/css/login.css">
 <link rel="stylesheet" href="/css/responsive.css">
-<style>
-:root{--gold-100:#f3d97a;--gold-200:#e6c247;--gold-300:#d4af37;--gold-400:#c99a2a;--text-primary:#fff;--text-body:#d8d3c4;--text-muted:#8a7d5a;--success:#6fd97a;--success-bg:rgba(30,80,40,.18);--success-border:rgba(80,180,100,.3);--success-text:#c9e8c9}
-#migration-notice{position:fixed;inset:0;background:radial-gradient(ellipse at top,#1a1408 0%,#0a0805 60%,#000 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10000;transition:opacity .3s,visibility .3s}
-#migration-notice.hidden{opacity:0;visibility:hidden;pointer-events:none}
-.migration-card{position:relative;z-index:1;width:100%;max-width:480px;background:linear-gradient(180deg,rgba(40,30,10,.6) 0%,rgba(20,15,5,.92) 100%);border:1px solid rgba(212,175,55,.35);border-radius:20px;padding:32px 28px;box-shadow:0 0 40px rgba(212,175,55,.08),0 20px 60px rgba(0,0,0,.6);animation:fadeInUp .6s}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.header{display:flex;gap:14px;margin-bottom:22px}
-.header__icon{width:48px;height:48px;border-radius:12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.35);display:flex;align-items:center;justify-content:center}
-.header__badge{display:inline-block;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.35);color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;padding:4px 10px;border-radius:6px;margin-bottom:8px;text-transform:uppercase}
-.header__title{color:var(--text-primary);font-size:17px;font-weight:500;line-height:1.35}
-.intro{color:var(--text-body);font-size:13.5px;line-height:1.65;margin-bottom:16px}
-.security-badge{display:flex;align-items:center;gap:10px;background:var(--success-bg);border:1px solid var(--success-border);border-radius:10px;padding:11px 13px;margin-bottom:22px}
-.steps{background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.18);border-radius:12px;padding:16px 18px;margin-bottom:20px}
-.step{display:flex;gap:12px;margin-bottom:11px}
-.step__num{width:24px;height:24px;border-radius:50%;background:var(--gold-300);color:#1a1408;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.btn--primary{background:linear-gradient(180deg,var(--gold-200),var(--gold-400));color:#1a1408;margin-bottom:10px}
-.btn--ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--text-body);margin-bottom:16px}
-.divider{display:flex;align-items:center;gap:12px;margin:14px 0}
-.divider__line{flex:1;height:1px;background:rgba(212,175,55,.2)}
-@media(max-width:520px){.migration-card{padding:26px 22px}}
+<style id="migration-styles">
+#migration-notice{position:fixed;inset:0;background:radial-gradient(ellipse at top,#1a1408 0%,#0a0805 60%,#000 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:99999}
+#migration-notice.hidden{display:none!important}
+.mig-card{position:relative;width:100%;max-width:480px;background:linear-gradient(180deg,rgba(40,30,10,.6),rgba(20,15,5,.92));border:1px solid rgba(212,175,55,.35);border-radius:20px;padding:32px 28px;box-shadow:0 0 40px rgba(212,175,55,.08)}
+.mig-header{display:flex;gap:14px;margin-bottom:22px}
+.mig-icon{width:48px;height:48px;border-radius:12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mig-icon svg{width:24px;height:24px;color:#d4af37}
+.mig-badge{display:inline-block;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.35);color:#d4af37;font-size:10px;font-weight:600;letter-spacing:1.5px;padding:4px 10px;border-radius:6px;margin-bottom:8px;text-transform:uppercase}
+.mig-title{color:#fff;font-size:17px;font-weight:500;line-height:1.35}
+.mig-title strong{color:#d4af37;font-weight:600}
+.mig-intro{color:#d8d3c4;font-size:13.5px;line-height:1.65;margin-bottom:16px}
+.mig-intro strong{color:#d4af37}
+.mig-secure{display:flex;align-items:center;gap:10px;background:rgba(30,80,40,.18);border:1px solid rgba(80,180,100,.3);border-radius:10px;padding:11px 13px;margin-bottom:22px}
+.mig-secure svg{width:20px;height:20px;color:#6fd97a;flex-shrink:0}
+.mig-secure p{color:#c9e8c9;font-size:12.5px;line-height:1.45}
+.mig-steps{background:rgba(0,0,0,.35);border:1px solid rgba(212,175,55,.18);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+.mig-steps-title{color:#d4af37;font-size:10px;font-weight:600;letter-spacing:1.5px;margin-bottom:14px;text-transform:uppercase}
+.mig-step{display:flex;gap:12px;margin-bottom:11px}
+.mig-step:last-child{margin-bottom:0}
+.mig-step-num{width:24px;height:24px;border-radius:50%;background:#d4af37;color:#1a1408;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mig-step-text{color:#d8d3c4;font-size:13.5px;line-height:1.5;padding-top:2px}
+.mig-step-text strong{color:#fff}
+.mig-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;text-decoration:none;font-family:inherit}
+.mig-btn-primary{background:linear-gradient(180deg,#e6c247,#c99a2a);color:#1a1408;margin-bottom:10px}
+.mig-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#d8d3c4;margin-bottom:16px}
+.mig-divider{display:flex;align-items:center;gap:12px;margin:14px 0}
+.mig-divider-line{flex:1;height:1px;background:rgba(212,175,55,.2)}
+.mig-divider-text{color:#8a7d5a;font-size:11px}
+.mig-footer{text-align:center;color:#8a7d5a;font-size:11.5px;margin-top:4px}
+.mig-footer a{color:#d4af37;font-weight:600;text-decoration:none}
 </style>
 </head>
 <body class="dark">
 
 <div id="migration-notice">
-  <div class="migration-card">
-    <div class="header">
-      <div class="header__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M10.363 3.591L2.257 17.125a1.914 1.914 0 001.636 2.871h16.214a1.914 1.914 0 001.636-2.87L13.637 3.59a1.914 1.914 0 00-3.274 0z"/><path d="M12 16h.01"/></svg></div>
-      <div class="header__content">
-        <span class="header__badge">Aviso importante de migração</span>
-        <h1 class="header__title">O GEPainel evoluiu — agora somos <strong>nkFinance</strong></h1>
+  <div class="mig-card">
+    <div class="mig-header">
+      <div class="mig-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M10.363 3.591L2.257 17.125a1.914 1.914 0 001.636 2.871h16.214a1.914 1.914 0 001.636-2.87L13.637 3.59a1.914 1.914 0 00-3.274 0z"/><path d="M12 16h.01"/></svg></div>
+      <div style="flex:1">
+        <span class="mig-badge">Aviso importante de migração</span>
+        <h1 class="mig-title">O GEPainel evoluiu — agora somos <strong>nkFinance</strong></h1>
       </div>
     </div>
-    <p class="intro">Senhores clientes, demos um passo importante na evolução do nosso sistema! O GEPainel foi modernizado e agora se chama <strong>nkFinance</strong> — uma plataforma mais rápida, segura e completa para a gestão dos seus empréstimos.</p>
-    <div class="security-badge">
+    <p class="mig-intro">Senhores clientes, demos um passo importante na evolução do nosso sistema! O GEPainel foi modernizado e agora se chama <strong>nkFinance</strong> — uma plataforma mais rápida, segura e completa para a gestão dos seus empréstimos.</p>
+    <div class="mig-secure">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
       <p><strong>Migração 100% segura</strong> — todos os seus dados, clientes e empréstimos foram preservados.</p>
     </div>
-    <div class="steps">
-      <h2 style="color:var(--gold-300);font-size:10px;font-weight:600;letter-spacing:1.5px;margin-bottom:14px;text-transform:uppercase">Como acessar seus dados</h2>
-      <div class="step"><div class="step__num">1</div><p style="color:var(--text-body);font-size:13.5px">Acesse <strong>nkfinance.app</strong> no navegador</p></div>
-      <div class="step"><div class="step__num">2</div><p style="color:var(--text-body);font-size:13.5px">Faça o login com o <strong>mesmo ID</strong> que usava aqui</p></div>
-      <div class="step"><div class="step__num">3</div><p style="color:var(--text-body);font-size:13.5px">Solicite sua <strong>senha temporária</strong> pelo WhatsApp abaixo</p></div>
+    <div class="mig-steps">
+      <h2 class="mig-steps-title">Como acessar seus dados</h2>
+      <div class="mig-step"><div class="mig-step-num">1</div><p class="mig-step-text">Acesse <strong>nkfinance.app</strong> no navegador</p></div>
+      <div class="mig-step"><div class="mig-step-num">2</div><p class="mig-step-text">Faça o login com o <strong>mesmo ID</strong> que usava aqui</p></div>
+      <div class="mig-step"><div class="mig-step-num">3</div><p class="mig-step-text">Solicite sua <strong>senha temporária</strong> pelo WhatsApp abaixo</p></div>
     </div>
-    <a class="btn btn--primary" href="https://wa.me/5591985919201">Solicitar senha temporária via WhatsApp</a>
-    <div class="divider"><div class="divider__line"></div><span style="color:var(--text-muted);font-size:11px">ou</span><div class="divider__line"></div></div>
-    <button class="btn btn--ghost" onclick="showLoginForm()">› Continuar acessando o GEPainel</button>
-    <p style="text-align:center;color:var(--text-muted);font-size:11.5px;margin-top:4px">Suporte: <a href="https://wa.me/5591985919201" style="color:var(--gold-300);font-weight:600;text-decoration:none">(91) 98591-9201</a></p>
+    <a class="mig-btn mig-btn-primary" href="https://wa.me/5591985919201?text=Ol%C3%A1!%20Sou%20cliente%20do%20GEPainel%20e%20gostaria%20de%20solicitar%20uma%20senha%20tempor%C3%A1ria%20para%20acessar%20minha%20conta%20no%20novo%20sistema%20nkFinance." target="_blank">Solicitar senha temporária via WhatsApp</a>
+    <div class="mig-divider"><div class="mig-divider-line"></div><span class="mig-divider-text">ou</span><div class="mig-divider-line"></div></div>
+    <button class="mig-btn mig-btn-ghost" onclick="hideMigrationNotice()">› Continuar acessando o GEPainel</button>
+    <p class="mig-footer">Suporte: <a href="https://wa.me/5591985919201">(91) 98591-9201</a></p>
   </div>
 </div>
 
@@ -75,20 +88,20 @@
           <h1 class="login-logo">GE<span>Painel</span></h1>
           <p class="login-sub">Gestão de Empréstimos</p>
           <div id="login-error" class="login-error"></div>
-          <div class="login-field"><label>Usuário ou e-mail</label><input type="text" id="lu" autocomplete="username"></div>
+          <div class="login-field"><label>Usuário ou e-mail</label><input type="text" id="lu" autocomplete="username" spellcheck="false"></div>
           <div class="login-field"><label>Senha</label><input type="password" id="lp" autocomplete="current-password"></div>
           <div style="display:flex;align-items:center;gap:8px;margin:1rem 0">
             <div id="remember-toggle" onclick="toggleRemember()" style="width:44px;height:24px;background:#D1D5DB;border-radius:999px;position:relative;cursor:pointer;transition:all .2s">
               <div id="remember-knob" style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:all .2s"></div>
             </div>
-            <label onclick="toggleRemember()" style="font-size:13px;cursor:pointer">Lembrar acesso</label>
+            <label onclick="toggleRemember()" style="font-size:13px;color:var(--n3);cursor:pointer">Lembrar acesso</label>
             <span id="remember-status" style="font-size:11px;margin-left:4px"></span>
           </div>
-          <button id="login-btn" onclick="doLogin()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;cursor:pointer;margin-bottom:1.5rem">Entrar →</button>
+          <button id="login-btn" onclick="doLogin()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:15px;cursor:pointer;margin-bottom:1.5rem">Entrar →</button>
           <div class="login-hint">
-            <a href="javascript:void(0)" onclick="openEsqueciSenha()">Esqueci minha senha</a>
-            <span> · </span>
-            <a href="javascript:void(0)" onclick="showRegister()">Criar conta</a>
+            <a href="javascript:void(0)" onclick="openEsqueciSenha()" style="color:var(--n3);text-decoration:none">Esqueci minha senha</a>
+            <span style="color:var(--n5);margin:0 6px">·</span>
+            <a href="javascript:void(0)" onclick="showRegister()" style="color:var(--n3);text-decoration:none">Criar conta</a>
           </div>
         </div>
         <div id="register-panel" style="display:none">
@@ -96,13 +109,13 @@
           <p class="login-sub">Criar conta — 30 dias grátis</p>
           <div id="reg-error" class="login-error"></div>
           <div class="login-field"><label>Nome completo</label><input type="text" id="reg-nome"></div>
-          <div class="login-field"><label>Usuário</label><input type="text" id="reg-login"></div>
-          <div class="login-field"><label>E-mail</label><input type="email" id="reg-email"></div>
-          <div class="login-field"><label>Senha</label><input type="password" id="reg-pass"></div>
-          <div class="login-field"><label>Confirme a senha</label><input type="password" id="reg-pass2"></div>
-          <div class="login-field"><label>Código de indicação (opcional)</label><input type="text" id="reg-indicacao"></div>
-          <button id="register-btn" onclick="doRegister()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;cursor:pointer;margin-bottom:1.5rem">Criar conta →</button>
-          <div class="login-hint"><a href="javascript:void(0)" onclick="showLogin()">← Voltar</a></div>
+          <div class="login-field"><label>Usuário (login)</label><input type="text" id="reg-login" spellcheck="false"></div>
+          <div class="login-field"><label>E-mail</label><input type="email" id="reg-email" autocomplete="email"></div>
+          <div class="login-field"><label>Senha (mínimo 4 caracteres)</label><input type="password" id="reg-pass" autocomplete="new-password"></div>
+          <div class="login-field"><label>Confirme a senha</label><input type="password" id="reg-pass2" autocomplete="new-password"></div>
+          <div class="login-field"><label>Código de indicação (opcional)</label><input type="text" id="reg-indicacao" placeholder="XXXXXXXX" style="text-transform:uppercase"></div>
+          <button id="register-btn" onclick="doRegister()" style="width:100%;padding:.85rem;background:#EA580C;color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:15px;cursor:pointer;margin-bottom:1.5rem">Criar conta →</button>
+          <div class="login-hint"><a href="javascript:void(0)" onclick="showLogin()" style="color:var(--n3);text-decoration:none">← Voltar ao login</a></div>
         </div>
       </div>
     </div>
@@ -111,13 +124,13 @@
 
 <div id="esqueci-senha-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEsqueciSenha()">
   <div class="modal-box" style="max-width:400px;padding:2rem">
-    <h3>Recuperar senha</h3>
-    <p style="font-size:13px;margin-bottom:1.5rem">Informe seu login ou e-mail.</p>
-    <div id="esqueci-error" style="margin-bottom:1rem"></div>
-    <input type="text" id="esqueci-input" placeholder="Login ou e-mail" style="width:100%;padding:.75rem;margin-bottom:1rem">
+    <h3 style="margin:0 0 .5rem;font-size:1.25rem">Recuperar senha</h3>
+    <p style="color:var(--n4);font-size:13px;margin:0 0 1.5rem">Informe seu login ou e-mail. Enviaremos instruções por e-mail.</p>
+    <div id="esqueci-error" class="auth-error" style="margin-bottom:1rem"></div>
+    <input type="text" id="esqueci-input" placeholder="Login ou e-mail" style="width:100%;padding:.75rem;border:1px solid var(--n8);border-radius:var(--rs);margin-bottom:1rem">
     <div style="display:flex;gap:8px">
-      <button onclick="closeEsqueciSenha()" style="flex:1;padding:.75rem;cursor:pointer">Cancelar</button>
-      <button id="esqueci-btn" onclick="enviarRecuperacaoSenha()" style="flex:1;padding:.75rem;background:#EA580C;color:#fff;border:none;cursor:pointer">Enviar</button>
+      <button onclick="closeEsqueciSenha()" style="flex:1;padding:.75rem;background:transparent;border:1px solid var(--n8);color:var(--n3);border-radius:var(--rm);cursor:pointer;font-weight:500">Cancelar</button>
+      <button id="esqueci-btn" onclick="enviarRecuperacaoSenha()" style="flex:1;padding:.75rem;background:var(--org);color:#fff;border:none;border-radius:var(--rm);cursor:pointer;font-weight:600">Enviar →</button>
     </div>
   </div>
 </div>
@@ -127,11 +140,15 @@
   <nav class="sidebar" id="sidebarEl"></nav>
   <div class="app-body">
     <header class="topbar">
-      <button class="menu-btn" onclick="toggleSidebar()"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button class="menu-btn" onclick="toggleSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-actions">
-        <button id="dark-toggle" onclick="toggleDarkMode()" class="icon-btn"></button>
-        <button onclick="openGlobalSearch()" class="icon-btn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+        <button id="dark-toggle" onclick="toggleDarkMode()" class="icon-btn" title="Alternar tema"></button>
+        <button onclick="openGlobalSearch()" class="icon-btn" title="Buscar (Ctrl+K)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
       </div>
     </header>
     <main class="content" id="main-content"></main>
@@ -141,10 +158,12 @@
 
 <div id="gsearch-ov" class="gsearch-overlay">
   <div class="gsearch-box">
-    <input type="text" id="gsearch-input" placeholder="Buscar..." oninput="runGlobalSearch()">
+    <input type="text" id="gsearch-input" placeholder="Buscar clientes, empréstimos..." oninput="runGlobalSearch()">
     <button onclick="closeGlobalSearch()" class="gsearch-close">×</button>
   </div>
-  <div id="gsearch-results" class="gsearch-results"><div class="gsearch-empty">Digite para buscar...</div></div>
+  <div id="gsearch-results" class="gsearch-results">
+    <div class="gsearch-empty">Digite para buscar...</div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -152,10 +171,15 @@
 <script>
 try{localStorage.removeItem('ep_s');localStorage.removeItem('ep_cred')}catch(e){}
 try{document.cookie='ep_s=;path=/;max-age=0'}catch(e){}
-function showLoginForm(){
-  const n=document.getElementById('migration-notice');
-  n.classList.add('hidden');
-  setTimeout(()=>{n.remove();document.getElementById('login-page').style.display=''},300);
+function hideMigrationNotice(){
+  const el=document.getElementById('migration-notice');
+  const styles=document.getElementById('migration-styles');
+  el.classList.add('hidden');
+  setTimeout(()=>{
+    el.remove();
+    if(styles)styles.remove();
+    document.getElementById('login-page').style.display='';
+  },100);
 }
 </script>
 
