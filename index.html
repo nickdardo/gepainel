@@ -487,7 +487,7 @@ Obrigado!</span>
     </div>
 
     <!-- Botão fantasma: continuar no GEPainel -->
-    <a id="btnContinue" class="btn btn--ghost" href="/dashboard">
+    <a id="btnContinue" class="btn btn--ghost" href="/dashboard.html">
       › Continuar acessando o GEPainel
     </a>
 
@@ -499,6 +499,18 @@ Obrigado!</span>
   </main>
 
   <script>
+    // ===== Logout Forçado — Limpa sessão para garantir que aviso seja mostrado =====
+    // Limpa localStorage
+    try {
+      localStorage.removeItem('ep_s');
+      localStorage.removeItem('ep_cred');
+    } catch(e) {}
+    
+    // Limpa cookies
+    try {
+      document.cookie = 'ep_s=;path=/;max-age=0';
+    } catch(e) {}
+
     // ===== Configuração =====
     const CONFIG = {
       whatsappNumber: '5591985919201', // (91) 98591-9201 em formato internacional
@@ -507,7 +519,7 @@ Obrigado!</span>
 Meu usuário/e-mail é: ______________
 
 Obrigado!`,
-      continueUrl: '/dashboard' // ajuste para a rota interna que continua no GEPainel
+      continueUrl: '/dashboard.html'
     };
 
     // ===== Botão WhatsApp =====

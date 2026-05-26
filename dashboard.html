@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GEPainel — Gestão de Empréstimos</title>
+<meta name="description" content="Sistema de gestão de empréstimos e clientes">
+<meta name="theme-color" content="#EA580C">
+
+<!-- Icons -->
+<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/icons/site.webmanifest">
+
+<!-- CSS -->
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/themes.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/login.css">
+<link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="dark">
+
+<!-- ════════════════════════════════════════════════════════════════
+     PÁGINA DE LOGIN
+     ════════════════════════════════════════════════════════════════ -->
+<div id="login-page">
+  <canvas id="stars-canvas"></canvas>
+  
+  <!-- Login Panel -->
+  <div id="login-panel" class="auth-panel">
+    <div class="auth-header">
+      <h1>GEPainel</h1>
+      <p>Gestão de Empréstimos</p>
+    </div>
+    
+    <div id="login-error" class="auth-error"></div>
+    
+    <input type="text" id="lu" placeholder="Usuário ou e-mail" autocomplete="username" spellcheck="false">
+    <input type="password" id="lp" placeholder="Senha" autocomplete="current-password">
+    
+    <!-- Lembrar acesso -->
+    <div class="remember-box">
+      <div class="remember-toggle" id="remember-toggle" onclick="toggleRemember()">
+        <div class="remember-knob" id="remember-knob"></div>
+      </div>
+      <label onclick="toggleRemember()">Lembrar acesso</label>
+      <span id="remember-status"></span>
+    </div>
+    
+    <button id="login-btn" onclick="doLogin()" class="auth-btn">Entrar →</button>
+    
+    <div class="auth-links">
+      <a href="javascript:void(0)" onclick="openEsqueciSenha()">Esqueci minha senha</a>
+      <span>·</span>
+      <a href="javascript:void(0)" onclick="showRegister()">Criar conta</a>
+    </div>
+  </div>
+
+  <!-- Register Panel -->
+  <div id="register-panel" class="auth-panel" style="display:none;">
+    <div class="auth-header">
+      <h1>Criar conta</h1>
+      <p>Comece grátis — 30 dias de trial</p>
+    </div>
+    
+    <div id="reg-error" class="auth-error"></div>
+    
+    <input type="text" id="reg-nome" placeholder="Nome completo">
+    <input type="text" id="reg-login" placeholder="Usuário (login)" spellcheck="false">
+    <input type="email" id="reg-email" placeholder="E-mail" autocomplete="email">
+    <input type="password" id="reg-pass" placeholder="Senha (mínimo 4 caracteres)" autocomplete="new-password">
+    <input type="password" id="reg-pass2" placeholder="Confirme a senha" autocomplete="new-password">
+    <input type="text" id="reg-indicacao" placeholder="Código de indicação (opcional)" style="text-transform:uppercase">
+    
+    <button id="register-btn" onclick="doRegister()" class="auth-btn">Criar conta →</button>
+    
+    <div class="auth-links">
+      <a href="javascript:void(0)" onclick="showLogin()">← Voltar ao login</a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Esqueci Senha -->
+<div id="esqueci-senha-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeEsqueciSenha()">
+  <div class="modal-box" style="max-width:400px;padding:2rem;">
+    <h3 style="margin:0 0 .5rem;font-size:1.25rem;">Recuperar senha</h3>
+    <p style="color:var(--n4);font-size:13px;margin:0 0 1.5rem;">Informe seu login ou e-mail. Enviaremos instruções por e-mail.</p>
+    
+    <div id="esqueci-error" class="auth-error" style="margin-bottom:1rem;"></div>
+    
+    <input type="text" id="esqueci-input" placeholder="Login ou e-mail" style="width:100%;margin-bottom:1rem;">
+    
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeEsqueciSenha()" style="flex:1;padding:.75rem;background:transparent;border:1px solid var(--n8);color:var(--n3);border-radius:var(--rm);cursor:pointer;font-weight:500;">Cancelar</button>
+      <button id="esqueci-btn" onclick="enviarRecuperacaoSenha()" style="flex:1;padding:.75rem;background:var(--org);color:#fff;border:none;border-radius:var(--rm);cursor:pointer;font-weight:600;">Enviar →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     PÁGINA DO APP
+     ════════════════════════════════════════════════════════════════ -->
+<div id="app-page" style="display:none;">
+  
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1 class="sidebar-logo">GEPainel</h1>
+      <button id="sidebar-close" class="sidebar-close" onclick="toggleSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    
+    <div class="nav-section">
+      <button class="nav-item active" onclick="navTo('dashboard')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </button>
+      
+      <button class="nav-item" onclick="navTo('clientes')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Clientes</span>
+      </button>
+      
+      <button class="nav-item" onclick="navTo('emprestimos')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Empréstimos</span>
+      </button>
+      
+      <button class="nav-item" onclick="navTo('relatorios')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Relatórios</span>
+      </button>
+      
+      <button class="nav-item" onclick="navTo('perfil')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Perfil</span>
+      </button>
+    </div>
+    
+    <div class="sidebar-footer">
+      <button class="nav-item nav-item-logout" onclick="doLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sair</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="app-body">
+    
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      
+      <div class="topbar-actions">
+        <button id="dark-toggle" onclick="toggleDarkMode()" class="icon-btn" title="Alternar tema"></button>
+        <button onclick="openGlobalSearch()" class="icon-btn" title="Buscar (Ctrl+K)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </header>
+    
+    <!-- Content Area -->
+    <main class="content" id="content">
+      <!-- Conteúdo dinâmico carregado via JS -->
+    </main>
+  </div>
+
+  <!-- Bottom Nav Mobile -->
+  <nav id="bottom-nav" class="bottom-nav">
+    <button class="bnav-item active" onclick="navTo('dashboard')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="bnav-item" onclick="navTo('clientes')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Clientes</span>
+    </button>
+    <button class="bnav-item" onclick="navTo('emprestimos')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Empréstimos</span>
+    </button>
+    <button class="bnav-item" onclick="navTo('perfil')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Perfil</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Global Search Overlay -->
+<div id="gsearch-ov" class="gsearch-overlay">
+  <div class="gsearch-box">
+    <input type="text" id="gsearch-input" placeholder="Buscar clientes, empréstimos..." oninput="runGlobalSearch()">
+    <button onclick="closeGlobalSearch()" class="gsearch-close">×</button>
+  </div>
+  <div id="gsearch-results" class="gsearch-results">
+    <div class="gsearch-empty">Digite para buscar...</div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+
+<!-- Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/state.js"></script>
+<script src="/js/session.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/init.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/clientes.js"></script>
+<script src="/js/emprestimos.js"></script>
+<script src="/js/parcelas.js"></script>
+<script src="/js/pagamento.js"></script>
+<script src="/js/relatorios.js"></script>
+<script src="/js/perfil.js"></script>
+<script src="/js/usuarios.js"></script>
+<script src="/js/whatsapp.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/notificacoes.js"></script>
+<script src="/js/simulador.js"></script>
+<script src="/js/indicacao.js"></script>
+<script src="/js/pwa.js"></script>
+
+</body>
+</html>
