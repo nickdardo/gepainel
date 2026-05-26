@@ -317,7 +317,7 @@ async function exportarParaNkFinance() {
     // ── 2. Empréstimos ────────────────────────────────────────
     const { data: rawEmprestimos, error: errEmp } = await sb
       .from('emprestimos')
-      .select('id, tomador_id, valor, juros, tipo, data_emprestimo, saldo_devedor, status, garantia, local, responsavel, owner_id')
+      .select('id, tomador_id, valor, juros, tipo, data_emprestimo, saldo_devedor, garantia, local, responsavel, owner_id')
       .eq('owner_id', session.id)
       .order('data_emprestimo', { ascending: false });
     if (errEmp) throw new Error('Erro ao buscar empréstimos: ' + errEmp.message);
@@ -372,7 +372,7 @@ async function exportarParaNkFinance() {
         data_emprestimo:    e.data_emprestimo    || null,
         parcelas:           null,  // GEPainel não armazena qtd de parcelas no empréstimo
         saldo_devedor:      e.saldo_devedor      ?? null,
-        status:             e.status             || 'ativo',
+        status:             (e.saldo_devedor === 0 ? 'quitado' : 'ativo'),  // derivado do saldo
         garantia:           e.garantia           || null,
         local:              e.local              || null,
         responsavel:        e.responsavel        || null
