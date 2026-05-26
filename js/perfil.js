@@ -317,11 +317,9 @@ async function exportarParaNkFinance() {
     // ── 2. Empréstimos ────────────────────────────────────────
     const { data: rawEmprestimos, error: errEmp } = await sb
       .from('emprestimos')
-      .select('id, tomador_id, valor, juros, tipo, data_emprestimo, parcelas, saldo_devedor, status, garantia, local, responsavel, owner_id')
+      .select('id, tomador_id, valor, juros, tipo, data_emprestimo, saldo_devedor, status, garantia, local, responsavel, owner_id')
       .eq('owner_id', session.id)
       .order('data_emprestimo', { ascending: false });
-
-    console.log('[nkFinance Export] Empréstimos:', rawEmprestimos?.length, 'erro:', errEmp?.message);
     if (errEmp) throw new Error('Erro ao buscar empréstimos: ' + errEmp.message);
 
     // ── 3. Parcelas (via lista de IDs dos empréstimos) ────────
@@ -372,7 +370,7 @@ async function exportarParaNkFinance() {
         juros:              e.juros              ?? null,
         tipo:               e.tipo               || 'juros',
         data_emprestimo:    e.data_emprestimo    || null,
-        parcelas:           e.parcelas           ?? null,
+        parcelas:           null,  // GEPainel não armazena qtd de parcelas no empréstimo
         saldo_devedor:      e.saldo_devedor      ?? null,
         status:             e.status             || 'ativo',
         garantia:           e.garantia           || null,
@@ -391,8 +389,6 @@ async function exportarParaNkFinance() {
         abatimento:            p.abatimento      ?? null
       }))
     };
-
-    console.log('[nkFinance Export] Payload pronto:', payload.clientes.length, 'clientes,', payload.emprestimos.length, 'emp,', payload.parcelas.length, 'parcelas');
     // ── 5. Download ───────────────────────────────────────────
     const json = JSON.stringify(payload, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
